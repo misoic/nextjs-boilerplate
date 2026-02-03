@@ -1,0 +1,82 @@
+import { Product, ApiResponse, ScrapingConfig } from '@/lib/types/product';
+
+// 기본 설정
+export const DEFAULT_CONFIG: ScrapingConfig = {
+    baseUrl: 'https://crawl-target-server.vercel.app',
+    timeout: 5000,
+    userAgent: 'Mozilla/5.0 (compatible; ScrapingBot/1.0)'
+};
+
+// 상품 데이터 추출 함수 (모든 페이지 자동 수집)
+export async function fetchProductData(
+    category: string = 'all',
+    pageSize: number = 10,
+    maxPages: number = 50,
+    config: ScrapingConfig = DEFAULT_CONFIG
+): Promise<Product[]> {
+    const allProducts: Product[] = [];
+    let currentPage = 1;
+    let hasMorePages = true;
+
+    console.log(`카테고리 "${category}"의 상품 데이터를 수집 시작...`);
+
+    while (hasMorePages) {
+        try {
+            // URL 생성 시 불필요한 공백 제거를 위해 템플릿 리터럴 정리
+            const apiUrl = `${config.baseUrl}/api/products?page=${currentPage}&category=${category}&pageSize=${pageSize}`;
+            console.log(`API 호출 중: ${apiUrl}`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'User-Agent': config.userAgent,
+                    'Accept': 'application/json',
+                },
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data: ApiResponse = await response.json();
+            console.log(`페이지 ${currentPage} API 호출 완료`);
+
+            if (data.products && data.products.length > 0) {
+                allProducts.push(...data.products);
+                console.log(`페이지 ${currentPage}: ${data.products.length}개 상품 추가`);
+
+                // 페이지 크기보다 적으면 마지막 페이지
+                if (data.products.length < pageSize) {
+                    hasMorePages = false;
+                    console.log(`페이지 ${currentPage}에서 ${data.products.length} 개 상품 발견 - 마지막 페이지`);
+                } else {
+                    currentPage++;
+                }
+            } else {
+                hasMorePages = false;
+                console.log(`페이지 ${currentPage}에서 데이터 없음 - 수집완료`);
+            }
+
+            // 안전장치
+            if (currentPage > maxPages) {
+                hasMorePages = false;
+                console.log(`최대 페이지 ${maxPages} 도달 수집 중단`);
+            }
+
+        } catch (error: unknown) {
+            console.error(`페이지 ${currentPage} 처리 중 오류: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+            currentPage++;
+            if (currentPage > maxPages) { // 무한 루프 방지
+                hasMorePages = false;
+                console.log(`최대 페이지 ${maxPages} 도달 수집 중단`);
+            }
+        }
+    }
+
+    console.log(`총 ${allProducts.length}개 상품 수집 완료`);
+    return allProducts;
+}

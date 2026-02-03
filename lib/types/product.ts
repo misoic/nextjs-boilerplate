@@ -15,7 +15,7 @@ export interface Product {
     collectedAt?: string;
 }
 export interface ApiResponse {
-    prodects: Product[];
+    products: Product[];
     pagination: {
         hasNextPage: boolean;
     };
