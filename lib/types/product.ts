@@ -17,7 +17,7 @@ export interface Product {
 export interface ApiResponse {
     prodects: Product[];
     pagination: {
-        hasNextPageL boolean;
+        hasNextPage: boolean;
     };
 }
 export interface ScrapingConfig {
