@@ -42,6 +42,37 @@ export const agentService = {
     },
 
     /**
+     * Helper to process a single notification reply
+     */
+    async replyToNotification(client: BotMadangClient, me: any, notif: any) {
+        if (notif.type !== 'comment_on_post' && notif.type !== 'reply_to_comment') return null;
+
+        console.log(`🔔 Processing notification from ${notif.actor_name}: ${notif.content_preview}`);
+
+        try {
+            // Think Reply
+            const replyContent = await thinkReply({
+                agentName: me.name,
+                originalPost: notif.post_title,
+                userComment: notif.content_preview || "내용 없음",
+                user: notif.actor_name
+            });
+
+            // Post Reply
+            if (notif.comment_id) {
+                await client.createComment(notif.post_id, replyContent, notif.comment_id);
+                // Mark as read ONLY if successful
+                await client.markNotificationAsRead(notif.id);
+                return `Replied to ${notif.actor_name} on "${notif.post_title}"`;
+            }
+        } catch (err: any) {
+            console.error(`Failed to process notification ${notif.id}:`, err.message);
+            throw err; // Re-throw to handle upstream
+        }
+        return null;
+    },
+
+    /**
      * Executes the comment reply workflow
      */
     async executeAutoReply() {
@@ -55,47 +86,29 @@ export const agentService = {
 
             const repliedLog: string[] = [];
 
-            // 2. Process Notifications
+            // 1.5 Get Me (once)
+            const me = await client.getMe();
+
+            // 2. Process Notifications with Throttling
             for (const notif of notifications) {
-                // Focus on comments and replies
-                if (notif.type === 'comment_on_post' || notif.type === 'reply_to_comment') {
-                    console.log(`🔔 New interaction from ${notif.actor_name}: ${notif.content_preview}`);
+                try {
+                    const result = await this.replyToNotification(client, me, notif);
+                    if (result) {
+                        repliedLog.push(result);
+                        console.log(`✅ ${result}`);
 
-                    try {
-                        // Get Agent Info (for the reply context)
-                        const me = await client.getMe();
-
-                        // Think Reply
-                        // Note: content_preview might be truncated, but sufficient for short banter.
-                        // Ideally we fetch the full comment, but API doesn't have "get comment by id" easily without traversing posts.
-                        // Optimization: Use preview for now.
-
-                        const replyContent = await thinkReply({
-                            agentName: me.name,
-                            originalPost: notif.post_title, // Use title as context if content unavailable
-                            userComment: notif.content_preview || "내용 없음",
-                            user: notif.actor_name
-                        });
-
-                        // Post Reply
-                        // IMPORTANT: For 'reply_to_comment', we must reply to the comment_id
-                        // For 'comment_on_post', we reply to the comment_id as well (it's the top level comment ID)
-                        // Notification object has `comment_id` which IS the ID of the comment that triggered the notification.
-                        // So we always reply to `notif.comment_id`.
-
-                        if (notif.comment_id) {
-                            await client.createComment(notif.post_id, replyContent, notif.comment_id);
-                            repliedLog.push(`Replied to ${notif.actor_name} on "${notif.post_title}"`);
-
-                            // Mark as read ONLY if successful
-                            await client.markNotificationAsRead(notif.id);
+                        // THROTTLING: Wait 12 seconds to avoid 429
+                        // (Only wait if it's not the last one)
+                        if (notif !== notifications[notifications.length - 1]) {
+                            console.log("⏳ Waiting 12s for rate limit...");
+                            await new Promise(resolve => setTimeout(resolve, 12000));
                         }
-                    } catch (err: any) {
-                        console.error(`Failed to process notification ${notif.id}:`, err.message);
+                    } else if (notif.type === 'upvote_on_post') {
+                        await client.markNotificationAsRead(notif.id);
                     }
-                } else if (notif.type === 'upvote_on_post') {
-                    // Just mark read
-                    await client.markNotificationAsRead(notif.id);
+                } catch (error: any) {
+                    console.error(`Skipping notification ${notif.id} due to error.`);
+                    // Continue to next notification even if one fails
                 }
             }
 

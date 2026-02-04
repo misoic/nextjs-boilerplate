@@ -74,6 +74,34 @@ export default function AgentPage() {
         }
     };
 
+    const runReplySingle = async (notif: any) => {
+        // Optimistic UI: Remove from list immediately to feel fast
+        if (!dashboard) return;
+
+        const originalNotifications = dashboard.recentNotifications;
+        const originalCount = dashboard.unreadNotificationsCount;
+
+        // Temporarily remove
+        setDashboard({
+            ...dashboard,
+            unreadNotificationsCount: Math.max(0, originalCount - 1),
+            recentNotifications: dashboard.recentNotifications.filter(n => n.id !== notif.id)
+        });
+
+        try {
+            await axios.post('/api/agent/reply-single', { notification: notif });
+            setLogs(prev => [`↩️ 단건 답장 완료: ${notif.actor_name}`, ...prev]);
+        } catch (error: any) {
+            // Revert on failure
+            setDashboard({
+                ...dashboard,
+                unreadNotificationsCount: originalCount,
+                recentNotifications: originalNotifications
+            });
+            setLogs(prev => [`❌ 답장 실패: ${error.response?.data?.error || error.message}`, ...prev]);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">🔄 에이전트 상황실 접속 중...</div>;
 
     return (
@@ -133,22 +161,31 @@ export default function AgentPage() {
                     <h2 className="font-semibold text-gray-800">🔔 최신 알림</h2>
                     {dashboard?.unreadNotificationsCount ? (
                         <button onClick={runReply} className="text-blue-500 text-sm hover:underline">
-                            모두 답장하기 →
+                            모두 답장하기 (오래 걸림) →
                         </button>
                     ) : null}
                 </div>
                 <div className="divide-y divide-gray-50">
                     {dashboard?.recentNotifications && dashboard.recentNotifications.length > 0 ? (
                         dashboard.recentNotifications.map((notif: any) => (
-                            <div key={notif.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                                <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-gray-900">{notif.actor_name}</span>
-                                    <span className="text-xs text-gray-400">{new Date(notif.created_at).toLocaleTimeString()}</span>
+                            <div key={notif.id} className="px-6 py-4 hover:bg-gray-50 transition-colors flex justify-between items-start group">
+                                <div>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm font-medium text-gray-900">{notif.actor_name}</span>
+                                        <span className="text-xs text-gray-400">{new Date(notif.created_at).toLocaleTimeString()}</span>
+                                        {notif.type === 'comment_on_post' && <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded">댓글</span>}
+                                        {notif.type === 'reply_to_comment' && <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded">답글</span>}
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-1 line-clamp-1">
+                                        "{notif.content_preview}"
+                                    </p>
                                 </div>
-                                <p className="text-sm text-gray-600 mt-1 line-clamp-1">
-                                    {notif.type === 'comment_on_post' ? '내 글에 댓글을 남겼습니다:' : '내 댓글에 답글을 달았습니다:'}
-                                    "{notif.content_preview}"
-                                </p>
+                                <button
+                                    onClick={() => runReplySingle(notif)}
+                                    className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    답장 ↩️
+                                </button>
                             </div>
                         ))
                     ) : (
@@ -178,7 +215,7 @@ export default function AgentPage() {
                         className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
                     >
                         <span>💬</span>
-                        <span>댓글/대댓글 답장하기</span>
+                        <span>전체 답장하기 (⚠️ 10초 간격)</span>
                     </button>
                 </div>
 
