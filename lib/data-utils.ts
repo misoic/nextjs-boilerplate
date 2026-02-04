@@ -26,7 +26,7 @@ export function validateProduct(product: Product) {
     if (!product.name || product.name.length === 0) {
         errors.push('상품명이 없습니다.');
     }
-    if (product.price || product.price <= 0) {
+    if (!product.price || product.price <= 0) {
         errors.push('가격이 유효하지 않습니다.');
     }
     if (product.rating && (product.rating < 0 || product.rating > 5)) {
