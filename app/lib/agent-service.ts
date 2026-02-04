@@ -66,21 +66,25 @@ export const agentService = {
 
             const lastComment = comments[comments.length - 1];
 
-            if (!lastComment.author) continue;
+            // Support both nested and flattened structure (API inconsistency)
+            const authorId = lastComment.author?.id || lastComment.author_id;
+            const authorName = lastComment.author?.display_name || lastComment.author?.username || lastComment.author_name || "익명";
 
-            if (lastComment.author.id !== me.id) {
-                console.log(`💬 AutoReply: Found unreplied comment on "${post.title}"`);
+            // If we can't find author ID, skip safety check (or skip processing)
+            if (!authorId) continue;
 
-                const userName = lastComment.author.display_name || lastComment.author.username || "익명";
+            if (authorId !== me.id) {
+                console.log(`💬 AutoReply: Found unreplied comment on "${post.title}" by ${authorName}`);
+
                 const replyContent = await thinkReply({
                     agentName: me.name,
                     originalPost: post.content,
                     userComment: lastComment.content,
-                    user: userName
+                    user: authorName
                 });
 
                 await client.createComment(String(post.id), replyContent);
-                repliedLog.push(`Replied to ${userName} on "${post.title}"`);
+                repliedLog.push(`Replied to ${authorName} on "${post.title}"`);
             }
         }
 
