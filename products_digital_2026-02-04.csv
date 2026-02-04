@@ -1,2 +1,49 @@
 상품ID,상품명,가격,원가,카테고리,평점,리뷰 수,특별할인,판매자명,판매자 이메일,수집 시간
-
+3,스마트 워치 S2,253000,,digital,4.6,210,true,이민준,genstore_0003@genstore.com,2026-02-04T06:15:48.741Z
+4,무선 블루투스 이어폰,140000,,digital,4.4,89,false,박지영,genstore_0004@genstore.com,2026-02-04T06:15:48.741Z
+15,프리미엄 노트북,1227000,,digital,4.8,156,true,최성민,genstore_0015@genstore.com,2026-02-04T06:15:48.741Z
+16,게이밍 마우스,124000,,digital,4.7,67,false,정하은,genstore_0016@genstore.com,2026-02-04T06:15:48.741Z
+25,프리미엄 태블릿,809000,,digital,4.8,156,false,강도윤,genstore_0025@genstore.com,2026-02-04T06:15:48.741Z
+26,게이밍 키보드,81000,,digital,4.7,67,true,윤서연,genstore_0026@genstore.com,2026-02-04T06:15:48.741Z
+43,스마트폰 충전기,1000,,digital,4.5,120,false,임재현,genstore_0043@genstore.com,2026-02-04T06:15:48.741Z
+44,블루투스 스피커,3000,,digital,4.6,99,true,송미라,genstore_0044@genstore.com,2026-02-04T06:15:48.741Z
+45,프리미엄 모니터,300000,,digital,4.8,88,false,한승우,genstore_0045@genstore.com,2026-02-04T06:15:48.741Z
+46,무선 마우스,128000,,digital,4.5,77,false,오다영,genstore_0046@genstore.com,2026-02-04T06:15:48.741Z
+47,프리미엄 헤드폰,232000,,digital,4.7,66,true,신태영,genstore_0047@genstore.com,2026-02-04T06:15:48.741Z
+48,스마트 홈 허브,116000,,digital,4.6,120,false,류현진,genstore_0048@genstore.com,2026-02-04T06:15:48.741Z
+49,프리미엄 SSD,213000,,digital,4.8,99,true,홍길동,genstore_0049@genstore.com,2026-02-04T06:15:48.741Z
+50,게이밍 헤드셋,1000,,digital,4.6,110,false,김영희,genstore_0050@genstore.com,2026-02-04T06:15:48.741Z
+51,프리미엄 프린터,269000,,digital,4.7,80,true,김수현,genstore_0051@genstore.com,2026-02-04T06:15:48.741Z
+52,스마트 체중계,40000,,digital,4.5,90,false,이민준,genstore_0052@genstore.com,2026-02-04T06:15:48.741Z
+53,프리미엄 웹캠,140000,,digital,4.8,70,true,박지영,genstore_0053@genstore.com,2026-02-04T06:15:48.741Z
+54,스마트 플러그,35000,,digital,4.6,85,false,최성민,genstore_0054@genstore.com,2026-02-04T06:15:48.741Z
+118,게이밍 의자,157000,,digital,4.7,112,true,박정민,genstore_0118@genstore.com,2026-02-04T06:15:48.741Z
+119,USB 허브 7포트,3000,,digital,4.5,89,false,최수영,genstore_0119@genstore.com,2026-02-04T06:15:48.741Z
+120,무선 충전패드,91000,,digital,4.6,134,true,정재훈,genstore_0120@genstore.com,2026-02-04T06:15:48.741Z
+121,스마트 전구 4개세트,128000,,digital,4.7,76,false,강미선,genstore_0121@genstore.com,2026-02-04T06:15:48.741Z
+122,휴대용 배터리 20000mAh,1000,,digital,4.8,198,true,윤태진,genstore_0122@genstore.com,2026-02-04T06:15:48.741Z
+123,블루투스 트랙볼 마우스,154000,,digital,4.6,67,false,임소영,genstore_0123@genstore.com,2026-02-04T06:15:48.741Z
+124,스마트 온도조절기,204000,,digital,4.7,145,true,송현우,genstore_0124@genstore.com,2026-02-04T06:15:48.741Z
+125,4K 액션캠,211000,,digital,4.8,89,false,한지영,genstore_0125@genstore.com,2026-02-04T06:15:48.741Z
+126,메카니컬 키보드 RGB,196000,,digital,4.7,156,true,오준석,genstore_0126@genstore.com,2026-02-04T06:15:48.742Z
+127,스마트 도어벨,61000,,digital,4.6,123,false,신혜린,genstore_0127@genstore.com,2026-02-04T06:15:48.742Z
+128,무선 프리젠터,1000,,digital,4.5,78,true,류건호,genstore_0128@genstore.com,2026-02-04T06:15:48.742Z
+129,스마트 공기청정기,292000,,digital,4.8,234,false,홍수민,genstore_0129@genstore.com,2026-02-04T06:15:48.742Z
+130,게이밍 마우스패드,1000,,digital,4.6,167,true,김태영,genstore_0130@genstore.com,2026-02-04T06:15:48.742Z
+131,USB 마이크,118000,,digital,4.7,98,false,이서현,genstore_0131@genstore.com,2026-02-04T06:15:48.742Z
+132,스마트 미러,228000,,digital,4.8,76,true,박민준,genstore_0132@genstore.com,2026-02-04T06:15:48.742Z
+133,무선 게임패드,46000,,digital,4.6,145,false,최은진,genstore_0133@genstore.com,2026-02-04T06:15:48.742Z
+134,스마트 스위치 3개세트,34000,,digital,4.7,123,true,정호진,genstore_0134@genstore.com,2026-02-04T06:15:48.742Z
+135,블루투스 넥밴드 이어폰,42000,,digital,4.5,189,false,강소연,genstore_0135@genstore.com,2026-02-04T06:15:48.742Z
+136,스마트 보안카메라,125000,,digital,4.8,198,true,윤민수,genstore_0136@genstore.com,2026-02-04T06:15:48.742Z
+137,휴대용 프로젝터,254000,,digital,4.7,112,false,임주연,genstore_0137@genstore.com,2026-02-04T06:15:48.742Z
+138,스마트 블라인드,149000,,digital,4.6,89,true,송지훈,genstore_0138@genstore.com,2026-02-04T06:15:48.742Z
+139,무선 충전 스탠드,117000,,digital,4.7,134,false,한예진,genstore_0139@genstore.com,2026-02-04T06:15:48.742Z
+140,게이밍 스피커,62000,,digital,4.6,167,true,오성민,genstore_0140@genstore.com,2026-02-04T06:15:48.742Z
+141,스마트 펜,27000,,digital,4.5,145,false,신아영,genstore_0141@genstore.com,2026-02-04T06:15:48.742Z
+142,블루투스 키보드,92000,,digital,4.7,178,true,류동현,genstore_0142@genstore.com,2026-02-04T06:15:48.742Z
+143,스마트 워치 밴드,22000,,digital,4.4,234,false,홍지원,genstore_0143@genstore.com,2026-02-04T06:15:48.742Z
+144,USB 허브 모니터스탠드,156000,,digital,4.6,123,true,김현우,genstore_0144@genstore.com,2026-02-04T06:15:48.742Z
+145,무선 마우스패드,116000,,digital,4.7,156,false,이유진,genstore_0145@genstore.com,2026-02-04T06:15:48.742Z
+146,스마트 가습기,151000,,digital,4.8,198,true,박준영,genstore_0146@genstore.com,2026-02-04T06:15:48.742Z
+147,게이밍 암체어,323000,,digital,4.7,89,false,최서연,genstore_0147@genstore.com,2026-02-04T06:15:48.742Z

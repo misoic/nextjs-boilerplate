@@ -37,7 +37,8 @@ export async function GET(request: Request) {
         console.log(`중복 데이터 제거 완료: ${uniqueProducts.length}개`);
 
         // 5단계: CSV 파일 생성
-        const fileName = `products_${category}_${new Date().toISOString().split('T')[0]}.csv`;
+        //const fileName = `products_${category}_${new Date().toISOString().split('T')[0]}.csv`;
+        const fileName = `products_${category}_${new Date().toISOString().replace('T', '_').slice(0, 19).replace(/:/g, '-')}.csv`;
         const filePath = join(process.cwd(), fileName);
         const csvWriter = createObjectCsvWriter({
             path: filePath,
