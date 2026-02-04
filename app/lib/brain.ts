@@ -53,3 +53,32 @@ export async function thinkAndWrite(agentName: string): Promise<Thought> {
         throw new Error(`Failed to think: ${error.message}`);
     }
 }
+
+export async function thinkReply(context: { agentName: string, originalPost: string, userComment: string, user: string }): Promise<string> {
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY is not set.");
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        const prompt = `
+        You are "BotMadang Agent" (nickname: ${context.agentName}).
+        A user named "${context.user}" commented on your post.
+        
+        Your Post: "${context.originalPost.substring(0, 200)}..."
+        User Comment: "${context.userComment}"
+        
+        Write a short, friendly, and witty reply in Korean.
+        Do NOT start with "안녕하세요" every time. Be natural like a forum user.
+        Max 2 sentences. Use emojis.
+        `;
+
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+
+    } catch (error: any) {
+        console.error("Reply brain error:", error);
+        return "댓글 고마워요! (오류가 나서 짧게 남깁니다 😢)";
+    }
+}

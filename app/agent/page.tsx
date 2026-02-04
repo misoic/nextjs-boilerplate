@@ -65,6 +65,31 @@ export default function AgentPage() {
         }
     };
 
+    const runReply = async () => {
+        setStatus('analyzing'); // Reuse 'analyzing' state for reply check
+        addLog("💬 댓글 확인 및 답장 시작...");
+        try {
+            const response = await fetch('/api/agent/reply-comments', { method: 'POST' });
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.repliedCount > 0) {
+                    addLog(`✅ ${data.repliedCount}개의 댓글에 답장했습니다.`);
+                    data.logs.forEach((l: string) => addLog(` - ${l}`));
+                } else {
+                    addLog("✨ 새로운 댓글이 없습니다.");
+                }
+                setStatus('idle');
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error: any) {
+            console.error(error);
+            setStatus('error');
+            addLog(`❌ 댓글 답장 실패: ${error.message}`);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
@@ -98,7 +123,7 @@ export default function AgentPage() {
                     )}
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <button
                         onClick={runAutomation}
                         disabled={status !== 'idle' && status !== 'done' && status !== 'error'}
@@ -108,32 +133,38 @@ export default function AgentPage() {
                                 : 'bg-purple-400 cursor-not-allowed'}
                         focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02]`}
                     >
-                        {status === 'idle' && "🧠 자율 사고 실행 (지금 바로 생각하기)"}
-                        {status === 'scraping' && "🤔 고민 중... (주제 선정 & 글쓰기)"}
-                        {status === 'done' && "✅ 완료! (봇마당 등록 성공)"}
-                        {status === 'error' && "❌ 오류 발생 (다시 시도)"}
+                        {status === 'scraping' ? "🤔 고민 중..." : "🧠 자율 사고 실행 (글쓰기)"}
                     </button>
 
-                    <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto">
-                        <div className="text-gray-400 mb-2 border-b border-gray-700 pb-1">System Logs</div>
-                        {logs.length === 0 && <span className="text-gray-600">대기 중...</span>}
-                        {logs.map((log, index) => (
-                            <div key={index} className="text-green-400 mb-1">
-                                {log}
-                            </div>
-                        ))}
-                    </div>
-
-                    {result && (
-                        <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200">
-                            <h3 className="text-lg font-medium text-green-900">결과 리포트</h3>
-                            <div className="mt-2 text-sm text-green-700">
-                                <p>총 상품 수: {result.steps?.scraping?.count}개</p>
-                                <p>포스트 ID: {result.steps?.posting?.postId}</p>
-                            </div>
-                        </div>
-                    )}
+                    <button
+                        onClick={runReply}
+                        disabled={status !== 'idle' && status !== 'done' && status !== 'error'}
+                        className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-md font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200`}
+                    >
+                        {status === 'analyzing' ? "💬 답장 쓰는 중..." : "💬 댓글 관리 (답장하기)"}
+                    </button>
                 </div>
+
+                <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto">
+                    <div className="text-gray-400 mb-2 border-b border-gray-700 pb-1">System Logs</div>
+                    {logs.length === 0 && <span className="text-gray-600">대기 중...</span>}
+                    {logs.map((log, index) => (
+                        <div key={index} className="text-green-400 mb-1">
+                            {log}
+                        </div>
+                    ))}
+                </div>
+
+                {result && (
+                    <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200">
+                        <h3 className="text-lg font-medium text-green-900">결과 리포트</h3>
+                        <div className="mt-2 text-sm text-green-700">
+                            <p>총 상품 수: {result.steps?.scraping?.count}개</p>
+                            <p>포스트 ID: {result.steps?.posting?.postId}</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

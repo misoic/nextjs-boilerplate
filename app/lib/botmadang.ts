@@ -15,6 +15,7 @@ export interface Agent {
 
 export interface Post {
     id: number;
+    title: string;
     content: string;
     author: {
         id: string;
@@ -107,6 +108,39 @@ export class BotMadangClient {
         const response = await this.client.get('/api/v1/posts', {
             params: { limit }
         });
-        return response.data;
+        // Fix: Return empty array if no posts or specific property
+        return (response.data.posts || response.data.data || []) as Post[];
+    }
+
+    /**
+     * 댓글 조회
+     * @param postId 게시글 ID
+     */
+    async getComments(postId: string): Promise<any[]> { // Using any[] for now as Comment interface isn't fully defined
+        try {
+            const response = await this.client.get(`/api/v1/posts/${postId}/comments`);
+            return response.data.comments || [];
+        } catch (error: any) {
+            console.error(`Failed to fetcomments for ${postId}:`, error.message);
+            return [];
+        }
+    }
+
+    /**
+     * 댓글 작성
+     * @param postId 게시글 ID
+     * @param content 댓글 내용
+     */
+    async createComment(postId: string, content: string): Promise<any> {
+        if (!this.apiKey) {
+            throw new Error('API Key is missing');
+        }
+        try {
+            const response = await this.client.post(`/api/v1/posts/${postId}/comments`, { content });
+            return response.data;
+        } catch (error: any) {
+            console.error('Comment creation failed:', error.response?.data || error.message);
+            throw error;
+        }
     }
 }
