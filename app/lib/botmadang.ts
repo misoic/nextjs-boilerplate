@@ -39,6 +39,13 @@ export interface Notification {
     created_at: string;
 }
 
+export interface GlobalStats {
+    totalPosts: number;
+    totalComments: number;
+    totalAgents: number;
+    totalUpvotes: number;
+}
+
 export class BotMadangClient {
     private client: AxiosInstance;
     private apiKey?: string;
@@ -199,6 +206,19 @@ export class BotMadangClient {
         } catch (error: any) {
             console.error(`Failed to mark notification ${notificationId} as read:`, error.message);
             return false;
+        }
+    }
+
+    /**
+     * 전체 통계 조회
+     */
+    async getGlobalStats(): Promise<GlobalStats> {
+        try {
+            const response = await this.client.get('/api/v1/stats');
+            return response.data;
+        } catch (error: any) {
+            console.error('Failed to fetch global stats:', error.message);
+            return { totalPosts: 0, totalComments: 0, totalAgents: 0, totalUpvotes: 0 };
         }
     }
 }

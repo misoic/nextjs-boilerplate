@@ -1,170 +1,202 @@
+'use client';
 
-"use client";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-import { useState } from 'react';
+interface DashboardData {
+    agent: {
+        id: string;
+        name: string;
+        claim_url: string;
+    };
+    myPostsCount: number;
+    unreadNotificationsCount: number;
+    recentNotifications: any[];
+    globalStats: {
+        totalPosts: number;
+        totalAgents: number;
+    };
+}
 
 export default function AgentPage() {
-    const [status, setStatus] = useState<'idle' | 'scraping' | 'analyzing' | 'posting' | 'done' | 'error'>('idle');
+    const [dashboard, setDashboard] = useState<DashboardData | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
-    const [result, setResult] = useState<any>(null);
-    const [agentInfo, setAgentInfo] = useState<any>(null);
+    const [status, setStatus] = useState<string>('idle');
+    const [loading, setLoading] = useState(true);
 
-    const addLog = (message: string) => {
-        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
-    };
-
-    const checkAgent = async () => {
+    const fetchDashboard = async () => {
         try {
-            const response = await fetch('/api/agent/me');
-            const data = await response.json();
-            if (data.success) {
-                setAgentInfo(data.agent);
-                addLog(`✅ 에이전트 정보 확인: ${data.agent.name}`);
-            } else {
-                addLog(`❌ 에이전트 정보 확인 실패: ${data.error}`);
+            const res = await axios.get('/api/agent/dashboard');
+            if (res.data.success) {
+                setDashboard(res.data.data);
             }
-        } catch (error: any) {
-            addLog(`❌ 에이전트 정보 확인 오류: ${error.message}`);
+        } catch (err) {
+            console.error("Failed to fetch dashboard", err);
+        } finally {
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchDashboard();
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchDashboard, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
     const runAutomation = async () => {
-        setStatus('scraping');
-        setLogs([]);
-        setResult(null);
-        addLog("🧠 자율 사고 시작: 주제 선정 및 글쓰기 중...");
-
+        setStatus('posting');
         try {
-            // For better UX, we could have separate API calls for each step, 
-            // but for now we are calling the all-in-one automation route.
-            // If the route takes too long (over 60s), we might need to break it down later.
-
-            const response = await fetch('/api/agent/run-automation', {
-                method: 'POST',
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.details ? `${errorData.error}: ${JSON.stringify(errorData.details)}` : errorData.error || "자동화 실행 실패");
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                setStatus('done');
-                addLog("자동화 완료! 봇마당에 글이 등록되었습니다.");
-                setResult(data);
-            } else {
-                throw new Error(data.error || "알 수 없는 오류");
-            }
-
+            const res = await axios.post('/api/agent/run-automation');
+            setLogs(prev => [`📝 글 작성 성공: ${res.data.topic}`, ...prev]);
+            await fetchDashboard(); // Refresh stats
         } catch (error: any) {
-            console.error(error);
-            setStatus('error');
-            addLog(`오류 발생: ${error.message}`);
+            setLogs(prev => [`❌ 오류: ${error.response?.data?.error || error.message}`, ...prev]);
+        } finally {
+            setStatus('idle');
         }
     };
 
     const runReply = async () => {
-        setStatus('analyzing'); // Reuse 'analyzing' state for reply check
-        addLog("💬 댓글 확인 및 답장 시작...");
+        setStatus('replying');
         try {
-            const response = await fetch('/api/agent/reply-comments', { method: 'POST' });
-            const data = await response.json();
-
-            if (data.success) {
-                if (data.repliedCount > 0) {
-                    addLog(`✅ ${data.repliedCount}개의 댓글에 답장했습니다.`);
-                    data.logs.forEach((l: string) => addLog(` - ${l}`));
-                } else {
-                    addLog("✨ 새로운 댓글이 없습니다.");
-                }
-                setStatus('idle');
-            } else {
-                throw new Error(data.error);
+            const res = await axios.post('/api/agent/reply-comments');
+            const count = res.data.repliedCount;
+            setLogs(prev => [`💬 답장 완료: ${count}개`, ...prev]);
+            if (res.data.logs) {
+                setLogs(prev => [...res.data.logs, ...prev]);
             }
+            await fetchDashboard(); // Refresh stats
         } catch (error: any) {
-            console.error(error);
-            setStatus('error');
-            addLog(`❌ 댓글 답장 실패: ${error.message}`);
+            setLogs(prev => [`❌ 오류: ${error.response?.data?.error || error.message}`, ...prev]);
+        } finally {
+            setStatus('idle');
         }
     };
 
+    if (loading) return <div className="p-8 text-center">🔄 에이전트 상황실 접속 중...</div>;
+
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
-                <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                        에이전트 컨트롤 패널
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
-                        자율 에이전트에게 작업을 지시하세요.
+        <div className="max-w-4xl mx-auto p-6 space-y-8">
+            {/* 1. Header */}
+            <header className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        {dashboard?.agent ? `안녕하세요, ${dashboard.agent.name}님! 👋` : '에이전트 상황실'}
+                    </h1>
+                    <p className="text-gray-500 text-sm mt-1">
+                        Agent ID: <span className="font-mono text-gray-400">{dashboard?.agent?.id}</span>
                     </p>
                 </div>
+                <div className="flex space-x-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${status === 'idle' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {status === 'idle' ? '🟢 대기 중' : '🟡 작업 중...'}
+                    </span>
+                </div>
+            </header>
 
-                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-medium text-gray-700">📌 내 에이전트 정보</h3>
-                        <button
-                            onClick={checkAgent}
-                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full transition-colors"
-                        >
-                            정보 확인
-                        </button>
+            {/* 2. Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Notification Card */}
+                <div className={`p-6 rounded-xl border ${dashboard?.unreadNotificationsCount ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}>
+                    <div className="text-gray-500 text-sm font-medium mb-2">읽지 않은 알림</div>
+                    <div className="flex items-baseline space-x-2">
+                        <span className={`text-4xl font-bold ${dashboard?.unreadNotificationsCount ? 'text-red-500' : 'text-gray-700'}`}>
+                            {dashboard?.unreadNotificationsCount || 0}
+                        </span>
+                        <span className="text-gray-400 text-sm">건</span>
                     </div>
+                </div>
 
-                    {agentInfo ? (
-                        <div className="text-sm">
-                            <p className="text-gray-900 font-bold text-lg">안녕하세요, {agentInfo.name}님의 Agent 입니다.</p>
-                            <p className="text-gray-500 text-xs mt-1">ID: {agentInfo.id}</p>
-                        </div>
+                {/* My Posts Card */}
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
+                    <div className="text-gray-500 text-sm font-medium mb-2">내가 쓴 글</div>
+                    <div className="flex items-baseline space-x-2">
+                        <span className="text-4xl font-bold text-blue-600">{dashboard?.myPostsCount || 0}</span>
+                        <span className="text-gray-400 text-sm">개</span>
+                    </div>
+                </div>
+
+                {/* Community Stats Card */}
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
+                    <div className="text-gray-500 text-sm font-medium mb-2">전체 커뮤니티</div>
+                    <div className="flex items-baseline space-x-2">
+                        <span className="text-2xl font-bold text-gray-700">{dashboard?.globalStats.totalPosts || '-'}</span>
+                        <span className="text-gray-400 text-xs">글 / {dashboard?.globalStats.totalAgents || '-'} 봇</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* 3. Notifications List */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h2 className="font-semibold text-gray-800">🔔 최신 알림</h2>
+                    {dashboard?.unreadNotificationsCount ? (
+                        <button onClick={runReply} className="text-blue-500 text-sm hover:underline">
+                            모두 답장하기 →
+                        </button>
+                    ) : null}
+                </div>
+                <div className="divide-y divide-gray-50">
+                    {dashboard?.recentNotifications && dashboard.recentNotifications.length > 0 ? (
+                        dashboard.recentNotifications.map((notif: any) => (
+                            <div key={notif.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex justify-between">
+                                    <span className="text-sm font-medium text-gray-900">{notif.actor_name}</span>
+                                    <span className="text-xs text-gray-400">{new Date(notif.created_at).toLocaleTimeString()}</span>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-1">
+                                    {notif.type === 'comment_on_post' ? '내 글에 댓글을 남겼습니다:' : '내 댓글에 답글을 달았습니다:'}
+                                    "{notif.content_preview}"
+                                </p>
+                            </div>
+                        ))
                     ) : (
-                        <p className="text-xs text-gray-400">아직 정보를 불러오지 않았습니다.</p>
+                        <div className="p-8 text-center text-gray-400 text-sm">
+                            새로운 알림이 없습니다.
+                        </div>
                     )}
                 </div>
+            </div>
 
+            {/* 4. Controls & Log */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Control Panel */}
                 <div className="space-y-4">
+                    <h2 className="font-semibold text-gray-800">⚙️ 수동 제어</h2>
                     <button
                         onClick={runAutomation}
-                        disabled={status !== 'idle' && status !== 'done' && status !== 'error'}
-                        className={`group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-medium rounded-md text-white 
-                        ${status === 'idle' || status === 'done' || status === 'error'
-                                ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
-                                : 'bg-purple-400 cursor-not-allowed'}
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02]`}
+                        disabled={status !== 'idle'}
+                        className="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
                     >
-                        {status === 'scraping' ? "🤔 고민 중..." : "🧠 자율 사고 실행 (글쓰기)"}
+                        <span>📝</span>
+                        <span>새 글 작성하기</span>
                     </button>
-
                     <button
                         onClick={runReply}
-                        disabled={status !== 'idle' && status !== 'done' && status !== 'error'}
-                        className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-md font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200`}
+                        disabled={status !== 'idle'}
+                        className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
                     >
-                        {status === 'analyzing' ? "💬 답장 쓰는 중..." : "💬 댓글 관리 (답장하기)"}
+                        <span>💬</span>
+                        <span>댓글/대댓글 답장하기</span>
                     </button>
                 </div>
 
-                <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto">
-                    <div className="text-gray-400 mb-2 border-b border-gray-700 pb-1">System Logs</div>
-                    {logs.length === 0 && <span className="text-gray-600">대기 중...</span>}
-                    {logs.map((log, index) => (
-                        <div key={index} className="text-green-400 mb-1">
-                            {log}
-                        </div>
-                    ))}
-                </div>
-
-                {result && (
-                    <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200">
-                        <h3 className="text-lg font-medium text-green-900">결과 리포트</h3>
-                        <div className="mt-2 text-sm text-green-700">
-                            <p>총 상품 수: {result.steps?.scraping?.count}개</p>
-                            <p>포스트 ID: {result.steps?.posting?.postId}</p>
-                        </div>
+                {/* Logs */}
+                <div className="space-y-4">
+                    <h2 className="font-semibold text-gray-800">📜 활동 로그</h2>
+                    <div className="bg-gray-900 text-gray-200 p-4 rounded-xl h-48 overflow-y-auto text-sm font-mono space-y-2">
+                        {logs.length === 0 ? (
+                            <div className="text-gray-600 italic">로그 대기 중...</div>
+                        ) : (
+                            logs.map((log, i) => (
+                                <div key={i} className="break-all border-l-2 border-gray-700 pl-2">
+                                    {log}
+                                </div>
+                            ))
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
