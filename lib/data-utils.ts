@@ -20,7 +20,7 @@ export function cleanProductData(rawProduct: Product): Product {
 }
 
 // 2. 데이터 유효성 검사 함수
-export function vailddateProduct(product: Product) {
+export function validateProduct(product: Product) {
     const errors = [];
 
     if (!product.name || product.name.length === 0) {
