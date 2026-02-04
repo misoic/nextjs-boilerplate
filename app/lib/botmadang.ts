@@ -27,6 +27,18 @@ export interface Post {
     comment_count: number;
 }
 
+export interface Notification {
+    id: string;
+    type: 'comment_on_post' | 'reply_to_comment' | 'upvote_on_post';
+    actor_name: string;
+    post_id: string;
+    post_title: string;
+    comment_id?: string;
+    content_preview?: string;
+    is_read: boolean;
+    created_at: string;
+}
+
 export class BotMadangClient {
     private client: AxiosInstance;
     private apiKey?: string;
@@ -155,6 +167,38 @@ export class BotMadangClient {
         } catch (error: any) {
             console.error('Comment creation failed:', error.response?.data || error.message);
             throw error;
+        }
+    }
+
+    /**
+     * 알림 조회
+     * @param unreadOnly 읽지 않은 알림만 조회 여부
+     */
+    async getNotifications(unreadOnly: boolean = false): Promise<Notification[]> {
+        if (!this.apiKey) throw new Error('API Key is missing');
+        try {
+            const response = await this.client.get('/api/v1/notifications', {
+                params: { unread_only: unreadOnly }
+            });
+            return response.data.notifications || [];
+        } catch (error: any) {
+            console.error('Failed to fetch notifications:', error.message);
+            return [];
+        }
+    }
+
+    /**
+     * 알림 읽음 처리
+     * @param notificationId 알림 ID
+     */
+    async markNotificationAsRead(notificationId: string): Promise<boolean> {
+        if (!this.apiKey) throw new Error('API Key is missing');
+        try {
+            await this.client.post('/api/v1/notifications/read', { notification_id: notificationId });
+            return true;
+        } catch (error: any) {
+            console.error(`Failed to mark notification ${notificationId} as read:`, error.message);
+            return false;
         }
     }
 }

@@ -45,53 +45,61 @@ export const agentService = {
      * Executes the comment reply workflow
      */
     async executeAutoReply() {
-        console.log("💬 AutoReply: Checking comments...");
+        console.log("💬 AutoReply: Checking notifications...");
         try {
             const client = new BotMadangClient();
 
-            // 1. Get Me
-            const me = await client.getMe();
-
-            // 2. Get My Posts (Fetch direct agent posts to avoid missing older ones)
-            console.log(`🔎 AutoReply: Fetching posts for Agent ${me.id}...`);
-            const myPosts = await client.getAgentPosts(me.id);
-            console.log(`   Found ${myPosts.length} posts.`);
+            // 1. Get Unread Notifications
+            const notifications = await client.getNotifications(true);
+            console.log(`🔎 Found ${notifications.length} unread notifications.`);
 
             const repliedLog: string[] = [];
 
-            // 3. Check comments
-            for (const post of myPosts) {
-                if (post.comment_count === 0) continue;
+            // 2. Process Notifications
+            for (const notif of notifications) {
+                // Focus on comments and replies
+                if (notif.type === 'comment_on_post' || notif.type === 'reply_to_comment') {
+                    console.log(`🔔 New interaction from ${notif.actor_name}: ${notif.content_preview}`);
 
-                const comments = await client.getComments(String(post.id));
-                if (comments.length === 0) continue;
+                    try {
+                        // Get Agent Info (for the reply context)
+                        const me = await client.getMe();
 
-                const lastComment = comments[comments.length - 1];
+                        // Think Reply
+                        // Note: content_preview might be truncated, but sufficient for short banter.
+                        // Ideally we fetch the full comment, but API doesn't have "get comment by id" easily without traversing posts.
+                        // Optimization: Use preview for now.
 
-                // Support both nested and flattened structure (API inconsistency)
-                const authorId = lastComment.author?.id || lastComment.author_id;
-                const authorName = lastComment.author?.display_name || lastComment.author?.username || lastComment.author_name || "익명";
+                        const replyContent = await thinkReply({
+                            agentName: me.name,
+                            originalPost: notif.post_title, // Use title as context if content unavailable
+                            userComment: notif.content_preview || "내용 없음",
+                            user: notif.actor_name
+                        });
 
-                // If we can't find author ID, skip safety check (or skip processing)
-                if (!authorId) continue;
+                        // Post Reply
+                        // IMPORTANT: For 'reply_to_comment', we must reply to the comment_id
+                        // For 'comment_on_post', we reply to the comment_id as well (it's the top level comment ID)
+                        // Notification object has `comment_id` which IS the ID of the comment that triggered the notification.
+                        // So we always reply to `notif.comment_id`.
 
-                if (authorId !== me.id) {
-                    console.log(`💬 AutoReply: Found unreplied comment on "${post.title}" by ${authorName}`);
+                        if (notif.comment_id) {
+                            await client.createComment(notif.post_id, replyContent, notif.comment_id);
+                            repliedLog.push(`Replied to ${notif.actor_name} on "${notif.post_title}"`);
 
-                    const replyContent = await thinkReply({
-                        agentName: me.name,
-                        originalPost: post.content,
-                        userComment: lastComment.content,
-                        user: authorName
-                    });
-
-                    // Use nested reply (pass comment ID as parent_id)
-                    await client.createComment(String(post.id), replyContent, String(lastComment.id));
-                    repliedLog.push(`Replied to ${authorName} on "${post.title}" (Nested)`);
+                            // Mark as read ONLY if successful
+                            await client.markNotificationAsRead(notif.id);
+                        }
+                    } catch (err: any) {
+                        console.error(`Failed to process notification ${notif.id}:`, err.message);
+                    }
+                } else if (notif.type === 'upvote_on_post') {
+                    // Just mark read
+                    await client.markNotificationAsRead(notif.id);
                 }
             }
 
-            console.log(`✅ AutoReply: Replied to ${repliedLog.length} comments.`);
+            console.log(`✅ AutoReply: Processed ${repliedLog.length} interactions.`);
             return {
                 success: true,
                 repliedCount: repliedLog.length,
