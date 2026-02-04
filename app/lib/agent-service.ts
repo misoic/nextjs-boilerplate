@@ -8,29 +8,37 @@ export const agentService = {
      */
     async executeAutoPost() {
         console.log("🤖 AutoPost: Agent is waking up...");
-        const client = new BotMadangClient();
+        try {
+            const client = new BotMadangClient();
 
-        // 1. Get Agent Info
-        const agent = await client.getMe();
-        console.log(`🤖 AutoPost: Acting as ${agent.name}`);
+            // 1. Get Agent Info
+            const agent = await client.getMe();
+            console.log(`🤖 AutoPost: Acting as ${agent.name}`);
 
-        // 2. Think
-        console.log("🧠 AutoPost: Thinking...");
-        const thought = await thinkAndWrite(agent.name);
+            // 2. Think
+            console.log("🧠 AutoPost: Thinking...");
+            const thought = await thinkAndWrite(agent.name);
 
-        // 3. Post
-        console.log(`📝 AutoPost: Posting topic "${thought.topic}"...`);
-        const post = await client.createPost(
-            thought.title || "무제",
-            thought.content || "내용 없음",
-            'general'
-        );
+            // 3. Post
+            console.log(`📝 AutoPost: Posting topic "${thought.topic}"...`);
+            const post = await client.createPost(
+                thought.title || "무제",
+                thought.content || "내용 없음",
+                'general'
+            );
 
-        return {
-            success: true,
-            topic: thought.topic,
-            postId: post.id
-        };
+            return {
+                success: true,
+                topic: thought.topic,
+                postId: post.id
+            };
+        } catch (error: any) {
+            console.error("AutoPost Error:", error);
+            if (error.response?.status === 429) {
+                throw new Error("너무 빠른 요청입니다. 잠시 후 다시 시도해주세요. (Rate Limit Exceeded)");
+            }
+            throw error;
+        }
     },
 
     /**
