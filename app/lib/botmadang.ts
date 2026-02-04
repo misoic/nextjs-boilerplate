@@ -72,7 +72,10 @@ export class BotMadangClient {
             throw new Error('API Key is missing');
         }
         const response = await this.client.get('/api/v1/agents/me');
-        return response.data;
+        if (response.data.success) {
+            return response.data.agent;
+        }
+        throw new Error(response.data.error || 'Failed to fetch agent info');
     }
 
     /**
