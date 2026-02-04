@@ -1,0 +1,268 @@
+상품ID,상품명,가격,원가,카테고리,평점,리뷰 수,특별할인,판매자명,판매자 이메일,수집 시간
+1,여성 여름 원피스,49000,,fashion,4.7,120,false,김수현,genstore_0001@genstore.com,2026-02-04T06:53:01.029Z
+2,남성 캐주얼 셔츠,5000,,fashion,4.5,98,true,이민준,genstore_0002@genstore.com,2026-02-04T06:53:01.029Z
+13,여성 린넨 블라우스,27000,,fashion,4.7,105,false,박지영,genstore_0013@genstore.com,2026-02-04T06:53:01.029Z
+14,남성 슬랙스,1000,,fashion,4.5,95,true,최성민,genstore_0014@genstore.com,2026-02-04T06:53:01.029Z
+23,여성 봄 트렌치코트,97000,,fashion,4.7,105,true,정하은,genstore_0023@genstore.com,2026-02-04T06:53:01.029Z
+24,남성 데님 팬츠,45000,,fashion,4.5,95,false,강도윤,genstore_0024@genstore.com,2026-02-04T06:53:01.029Z
+33,여성 가을 니트,67000,,fashion,4.8,88,false,윤서연,genstore_0033@genstore.com,2026-02-04T06:53:01.029Z
+34,남성 겨울 패딩,187000,,fashion,4.6,77,true,임재현,genstore_0034@genstore.com,2026-02-04T06:53:01.029Z
+35,여성 오피스 정장,28000,,fashion,4.7,66,false,송미라,genstore_0035@genstore.com,2026-02-04T06:53:01.029Z
+36,남성 반팔 티셔츠,108000,,fashion,4.5,120,false,한승우,genstore_0036@genstore.com,2026-02-04T06:53:01.029Z
+37,여성 플리츠 스커트,116000,,fashion,4.8,99,true,오다영,genstore_0037@genstore.com,2026-02-04T06:53:01.029Z
+38,남성 후드 집업,102000,,fashion,4.6,110,false,신태영,genstore_0038@genstore.com,2026-02-04T06:53:01.029Z
+39,여성 봄 가디건,36000,,fashion,4.7,80,true,류현진,genstore_0039@genstore.com,2026-02-04T06:53:01.029Z
+40,남성 트레이닝 팬츠,4000,,fashion,4.5,90,false,홍길동,genstore_0040@genstore.com,2026-02-04T06:53:01.029Z
+41,여성 겨울 코트,142000,,fashion,4.8,70,true,김영희,genstore_0041@genstore.com,2026-02-04T06:53:01.029Z
+42,남성 니트 스웨터,36000,,fashion,4.6,85,false,김수현,genstore_0042@genstore.com,2026-02-04T06:53:01.029Z
+3,스마트 워치 S2,272000,,digital,4.6,210,true,이민준,genstore_0003@genstore.com,2026-02-04T06:53:01.029Z
+4,무선 블루투스 이어폰,84000,,digital,4.4,89,false,박지영,genstore_0004@genstore.com,2026-02-04T06:53:01.029Z
+15,프리미엄 노트북,1329000,,digital,4.8,156,true,최성민,genstore_0015@genstore.com,2026-02-04T06:53:01.029Z
+16,게이밍 마우스,192000,,digital,4.7,67,false,정하은,genstore_0016@genstore.com,2026-02-04T06:53:01.029Z
+25,프리미엄 태블릿,950000,,digital,4.8,156,false,강도윤,genstore_0025@genstore.com,2026-02-04T06:53:01.029Z
+26,게이밍 키보드,221000,,digital,4.7,67,true,윤서연,genstore_0026@genstore.com,2026-02-04T06:53:01.029Z
+43,스마트폰 충전기,24000,,digital,4.5,120,false,임재현,genstore_0043@genstore.com,2026-02-04T06:53:01.029Z
+44,블루투스 스피커,10000,,digital,4.6,99,true,송미라,genstore_0044@genstore.com,2026-02-04T06:53:01.029Z
+45,프리미엄 모니터,310000,,digital,4.8,88,false,한승우,genstore_0045@genstore.com,2026-02-04T06:53:01.029Z
+46,무선 마우스,1000,,digital,4.5,77,false,오다영,genstore_0046@genstore.com,2026-02-04T06:53:01.029Z
+47,프리미엄 헤드폰,210000,,digital,4.7,66,true,신태영,genstore_0047@genstore.com,2026-02-04T06:53:01.029Z
+48,스마트 홈 허브,15000,,digital,4.6,120,false,류현진,genstore_0048@genstore.com,2026-02-04T06:53:01.029Z
+49,프리미엄 SSD,201000,,digital,4.8,99,true,홍길동,genstore_0049@genstore.com,2026-02-04T06:53:01.029Z
+50,게이밍 헤드셋,9000,,digital,4.6,110,false,김영희,genstore_0050@genstore.com,2026-02-04T06:53:01.029Z
+51,프리미엄 프린터,417000,,digital,4.7,80,true,김수현,genstore_0051@genstore.com,2026-02-04T06:53:01.029Z
+52,스마트 체중계,23000,,digital,4.5,90,false,이민준,genstore_0052@genstore.com,2026-02-04T06:53:01.029Z
+53,프리미엄 웹캠,1000,,digital,4.8,70,true,박지영,genstore_0053@genstore.com,2026-02-04T06:53:01.029Z
+54,스마트 플러그,28000,,digital,4.6,85,false,최성민,genstore_0054@genstore.com,2026-02-04T06:53:01.029Z
+5,유기농 사과 5kg,1000,,food,4.8,150,true,정하은,genstore_0005@genstore.com,2026-02-04T06:53:01.029Z
+6,프리미엄 견과세트,32000,,food,4.7,110,false,강도윤,genstore_0006@genstore.com,2026-02-04T06:53:01.029Z
+17,유기농 바나나 1kg,1000,,food,4.6,80,false,윤서연,genstore_0017@genstore.com,2026-02-04T06:53:01.029Z
+18,프리미엄 오메가3,1000,,food,4.7,110,true,임재현,genstore_0018@genstore.com,2026-02-04T06:53:01.029Z
+27,유기농 오렌지 2kg,29900,,food,4.6,80,true,송미라,genstore_0027@genstore.com,2026-02-04T06:53:01.029Z
+28,프리미엄 비타민C,1000,,food,4.7,110,false,한승우,genstore_0028@genstore.com,2026-02-04T06:53:01.029Z
+55,유기농 블루베리 1kg,1000,,food,4.8,90,true,오다영,genstore_0055@genstore.com,2026-02-04T06:53:01.029Z
+56,프리미엄 홍삼정,119000,,food,4.7,100,false,신태영,genstore_0056@genstore.com,2026-02-04T06:53:01.029Z
+57,유기농 감자 3kg,1000,,food,4.6,70,false,류현진,genstore_0057@genstore.com,2026-02-04T06:53:01.029Z
+58,프리미엄 프로폴리스,1000,,food,4.7,80,true,홍길동,genstore_0058@genstore.com,2026-02-04T06:53:01.029Z
+59,유기농 토마토 2kg,1000,,food,4.8,60,false,김영희,genstore_0059@genstore.com,2026-02-04T06:53:01.029Z
+60,프리미엄 루테인,52000,,food,4.7,90,true,김수현,genstore_0060@genstore.com,2026-02-04T06:53:01.029Z
+61,유기농 당근 2kg,95000,,food,4.6,50,false,이민준,genstore_0061@genstore.com,2026-02-04T06:53:01.029Z
+62,프리미엄 칼슘,1000,,food,4.7,60,false,박지영,genstore_0062@genstore.com,2026-02-04T06:53:01.029Z
+7,친환경 주방세제 1L,48900,,living,4.5,60,false,최성민,genstore_0007@genstore.com,2026-02-04T06:53:01.029Z
+8,프리미엄 베개,63000,,living,4.6,80,true,정하은,genstore_0008@genstore.com,2026-02-04T06:53:01.029Z
+19,프리미엄 이불세트,150000,,living,4.6,80,false,강도윤,genstore_0019@genstore.com,2026-02-04T06:53:01.029Z
+29,프리미엄 쿠션,1000,,living,4.6,80,true,윤서연,genstore_0029@genstore.com,2026-02-04T06:53:01.029Z
+63,프리미엄 러그,100000,,living,4.7,70,false,임재현,genstore_0063@genstore.com,2026-02-04T06:53:01.029Z
+64,프리미엄 커튼,40000,,living,4.6,60,true,송미라,genstore_0064@genstore.com,2026-02-04T06:53:01.029Z
+65,프리미엄 식탁보,15000,,living,4.7,50,false,한승우,genstore_0065@genstore.com,2026-02-04T06:53:01.029Z
+66,프리미엄 수건세트,12000,,living,4.8,40,true,오다영,genstore_0066@genstore.com,2026-02-04T06:53:01.029Z
+67,프리미엄 욕실화,1000,,living,4.6,30,false,신태영,genstore_0067@genstore.com,2026-02-04T06:53:01.029Z
+68,프리미엄 주방장갑,1000,,living,4.7,20,false,류현진,genstore_0068@genstore.com,2026-02-04T06:53:01.029Z
+69,프리미엄 도마,1000,,living,4.8,10,true,홍길동,genstore_0069@genstore.com,2026-02-04T06:53:01.029Z
+70,프리미엄 세탁바구니,2000,,living,4.6,15,false,김영희,genstore_0070@genstore.com,2026-02-04T06:53:01.029Z
+9,베스트셀러 소설집,49000,,books,4.9,200,false,김수현,genstore_0009@genstore.com,2026-02-04T06:53:01.029Z
+10,영어 회화책,1000,,books,4.7,130,true,이민준,genstore_0010@genstore.com,2026-02-04T06:53:01.029Z
+20,베스트셀러 에세이집,24000,,books,4.9,200,true,박지영,genstore_0020@genstore.com,2026-02-04T06:53:01.029Z
+30,베스트셀러 자기계발서,1000,,books,4.9,200,false,최성민,genstore_0030@genstore.com,2026-02-04T06:53:01.029Z
+71,베스트셀러 만화책,1000,,books,4.8,150,true,정하은,genstore_0071@genstore.com,2026-02-04T06:53:01.029Z
+72,영어 단어장,104000,,books,4.7,120,false,강도윤,genstore_0072@genstore.com,2026-02-04T06:53:01.029Z
+73,베스트셀러 시집,71000,,books,4.9,110,true,윤서연,genstore_0073@genstore.com,2026-02-04T06:53:01.029Z
+74,프리미엄 미술책,1000,,books,4.8,100,false,임재현,genstore_0074@genstore.com,2026-02-04T06:53:01.029Z
+75,프리미엄 요리책,13000,,books,4.7,90,true,송미라,genstore_0075@genstore.com,2026-02-04T06:53:01.029Z
+76,프리미엄 여행책,1000,,books,4.8,80,false,한승우,genstore_0076@genstore.com,2026-02-04T06:53:01.029Z
+77,프리미엄 자기계발서,1000,,books,4.7,70,true,오다영,genstore_0077@genstore.com,2026-02-04T06:53:01.029Z
+78,프리미엄 과학책,21000,,books,4.8,60,false,신태영,genstore_0078@genstore.com,2026-02-04T06:53:01.029Z
+79,프리미엄 역사책,45000,,books,4.7,50,true,류현진,genstore_0079@genstore.com,2026-02-04T06:53:01.029Z
+11,러닝화 남성용,128000,,sports,4.8,140,true,홍길동,genstore_0011@genstore.com,2026-02-04T06:53:01.029Z
+12,요가매트 프리미엄,91000,,sports,4.6,90,false,김영희,genstore_0012@genstore.com,2026-02-04T06:53:01.029Z
+21,농구공 프리미엄,119000,,sports,4.8,140,false,김수현,genstore_0021@genstore.com,2026-02-04T06:53:01.029Z
+22,등산용 배낭 30L,132000,,sports,4.6,90,true,이민준,genstore_0022@genstore.com,2026-02-04T06:53:01.030Z
+31,배드민턴 라켓 세트,1000,,sports,4.8,140,true,박지영,genstore_0031@genstore.com,2026-02-04T06:53:01.030Z
+32,캠핑용 텐트 4인용,95000,,sports,4.6,90,false,최성민,genstore_0032@genstore.com,2026-02-04T06:53:01.030Z
+80,프리미엄 축구공,61000,,sports,4.8,120,true,정하은,genstore_0080@genstore.com,2026-02-04T06:53:01.030Z
+81,프리미엄 탁구채,86000,,sports,4.7,110,false,강도윤,genstore_0081@genstore.com,2026-02-04T06:53:01.030Z
+82,프리미엄 골프공,18000,,sports,4.6,100,true,윤서연,genstore_0082@genstore.com,2026-02-04T06:53:01.030Z
+83,프리미엄 테니스라켓,13000,,sports,4.8,90,false,임재현,genstore_0083@genstore.com,2026-02-04T06:53:01.030Z
+84,프리미엄 배구공,1000,,sports,4.7,80,true,송미라,genstore_0084@genstore.com,2026-02-04T06:53:01.030Z
+85,프리미엄 헬스장갑,31000,,sports,4.6,70,false,한승우,genstore_0085@genstore.com,2026-02-04T06:53:01.030Z
+86,프리미엄 스쿼트밴드,11000,,sports,4.7,60,false,오다영,genstore_0086@genstore.com,2026-02-04T06:53:01.030Z
+87,프리미엄 줄넘기,1000,,sports,4.8,50,true,신태영,genstore_0087@genstore.com,2026-02-04T06:53:01.030Z
+88,여성 스킨케어 세트,65000,,fashion,4.8,115,true,김지현,genstore_0088@genstore.com,2026-02-04T06:53:01.030Z
+89,남성 정장 벨트,117000,,fashion,4.6,95,false,이성훈,genstore_0089@genstore.com,2026-02-04T06:53:01.030Z
+90,여성 에센스 크림,24000,,fashion,4.7,128,true,박수진,genstore_0090@genstore.com,2026-02-04T06:53:01.030Z
+91,남성 카시미어 스카프,1000,,fashion,4.5,82,false,최민수,genstore_0091@genstore.com,2026-02-04T06:53:01.030Z
+92,여성 립스틱 세트,29000,,fashion,4.6,156,true,정은혜,genstore_0092@genstore.com,2026-02-04T06:53:01.030Z
+93,남성 양말 5쌍세트,1000,,fashion,4.4,67,false,강태현,genstore_0093@genstore.com,2026-02-04T06:53:01.030Z
+94,여성 마스크팩 10매,1000,,fashion,4.8,203,true,윤미라,genstore_0094@genstore.com,2026-02-04T06:53:01.030Z
+95,남성 넥타이 3개세트,76000,,fashion,4.6,89,false,임동혁,genstore_0095@genstore.com,2026-02-04T06:53:01.030Z
+96,여성 아이섀도우 팔레트,37000,,fashion,4.7,134,true,송혜진,genstore_0096@genstore.com,2026-02-04T06:53:01.030Z
+97,남성 가죽 지갑,36000,,fashion,4.8,76,false,한민우,genstore_0097@genstore.com,2026-02-04T06:53:01.030Z
+98,여성 클렌징 오일,1000,,fashion,4.6,145,true,오나영,genstore_0098@genstore.com,2026-02-04T06:53:01.030Z
+99,남성 운동복 상하의,1000,,fashion,4.5,92,false,신재원,genstore_0099@genstore.com,2026-02-04T06:53:01.030Z
+100,여성 선크림 SPF50,1000,,fashion,4.7,118,true,류서연,genstore_0100@genstore.com,2026-02-04T06:53:01.030Z
+101,남성 모자 컬렉션,1000,,fashion,4.4,73,false,홍민기,genstore_0101@genstore.com,2026-02-04T06:53:01.030Z
+102,여성 파운데이션,109000,,fashion,4.6,167,true,김보라,genstore_0102@genstore.com,2026-02-04T06:53:01.030Z
+103,남성 체크 셔츠,87000,,fashion,4.5,84,false,이준혁,genstore_0103@genstore.com,2026-02-04T06:53:01.030Z
+104,여성 향수 50ml,1000,,fashion,4.8,156,true,박채영,genstore_0104@genstore.com,2026-02-04T06:53:01.030Z
+105,남성 청바지,1000,,fashion,4.6,98,false,최현준,genstore_0105@genstore.com,2026-02-04T06:53:01.030Z
+106,여성 BB크림,33000,,fashion,4.7,142,true,정미영,genstore_0106@genstore.com,2026-02-04T06:53:01.030Z
+107,남성 코트,71000,,fashion,4.8,65,false,강동원,genstore_0107@genstore.com,2026-02-04T06:53:01.030Z
+108,여성 토너 200ml,1000,,fashion,4.6,178,true,윤지혜,genstore_0108@genstore.com,2026-02-04T06:53:01.030Z
+109,남성 스웨터,98000,,fashion,4.5,87,false,임우진,genstore_0109@genstore.com,2026-02-04T06:53:01.030Z
+110,여성 세럼 30ml,99000,,fashion,4.8,123,true,송은정,genstore_0110@genstore.com,2026-02-04T06:53:01.030Z
+111,남성 조거팬츠,27000,,fashion,4.4,95,false,한정우,genstore_0111@genstore.com,2026-02-04T06:53:01.030Z
+112,여성 아이크림,116000,,fashion,4.7,134,true,오수진,genstore_0112@genstore.com,2026-02-04T06:53:01.030Z
+113,남성 폴로셔츠,135000,,fashion,4.6,78,false,신민철,genstore_0113@genstore.com,2026-02-04T06:53:01.030Z
+114,여성 컨실러,1000,,fashion,4.5,189,true,류하은,genstore_0114@genstore.com,2026-02-04T06:53:01.030Z
+115,남성 슬리퍼,1000,,fashion,4.4,56,false,홍성호,genstore_0115@genstore.com,2026-02-04T06:53:01.030Z
+116,여성 미스트,23000,,fashion,4.6,145,true,김다연,genstore_0116@genstore.com,2026-02-04T06:53:01.030Z
+117,남성 수트,183000,,fashion,4.8,43,false,이동현,genstore_0117@genstore.com,2026-02-04T06:53:01.030Z
+118,게이밍 의자,201000,,digital,4.7,112,true,박정민,genstore_0118@genstore.com,2026-02-04T06:53:01.030Z
+119,USB 허브 7포트,124000,,digital,4.5,89,false,최수영,genstore_0119@genstore.com,2026-02-04T06:53:01.030Z
+120,무선 충전패드,1000,,digital,4.6,134,true,정재훈,genstore_0120@genstore.com,2026-02-04T06:53:01.030Z
+121,스마트 전구 4개세트,131000,,digital,4.7,76,false,강미선,genstore_0121@genstore.com,2026-02-04T06:53:01.030Z
+122,휴대용 배터리 20000mAh,87000,,digital,4.8,198,true,윤태진,genstore_0122@genstore.com,2026-02-04T06:53:01.030Z
+123,블루투스 트랙볼 마우스,118000,,digital,4.6,67,false,임소영,genstore_0123@genstore.com,2026-02-04T06:53:01.030Z
+124,스마트 온도조절기,206000,,digital,4.7,145,true,송현우,genstore_0124@genstore.com,2026-02-04T06:53:01.030Z
+125,4K 액션캠,289000,,digital,4.8,89,false,한지영,genstore_0125@genstore.com,2026-02-04T06:53:01.030Z
+126,메카니컬 키보드 RGB,58000,,digital,4.7,156,true,오준석,genstore_0126@genstore.com,2026-02-04T06:53:01.030Z
+127,스마트 도어벨,132000,,digital,4.6,123,false,신혜린,genstore_0127@genstore.com,2026-02-04T06:53:01.030Z
+128,무선 프리젠터,1000,,digital,4.5,78,true,류건호,genstore_0128@genstore.com,2026-02-04T06:53:01.030Z
+129,스마트 공기청정기,228000,,digital,4.8,234,false,홍수민,genstore_0129@genstore.com,2026-02-04T06:53:01.030Z
+130,게이밍 마우스패드,1000,,digital,4.6,167,true,김태영,genstore_0130@genstore.com,2026-02-04T06:53:01.030Z
+131,USB 마이크,37000,,digital,4.7,98,false,이서현,genstore_0131@genstore.com,2026-02-04T06:53:01.030Z
+132,스마트 미러,291000,,digital,4.8,76,true,박민준,genstore_0132@genstore.com,2026-02-04T06:53:01.030Z
+133,무선 게임패드,35000,,digital,4.6,145,false,최은진,genstore_0133@genstore.com,2026-02-04T06:53:01.030Z
+134,스마트 스위치 3개세트,1000,,digital,4.7,123,true,정호진,genstore_0134@genstore.com,2026-02-04T06:53:01.030Z
+135,블루투스 넥밴드 이어폰,151000,,digital,4.5,189,false,강소연,genstore_0135@genstore.com,2026-02-04T06:53:01.030Z
+136,스마트 보안카메라,92000,,digital,4.8,198,true,윤민수,genstore_0136@genstore.com,2026-02-04T06:53:01.030Z
+137,휴대용 프로젝터,183000,,digital,4.7,112,false,임주연,genstore_0137@genstore.com,2026-02-04T06:53:01.030Z
+138,스마트 블라인드,157000,,digital,4.6,89,true,송지훈,genstore_0138@genstore.com,2026-02-04T06:53:01.030Z
+139,무선 충전 스탠드,93000,,digital,4.7,134,false,한예진,genstore_0139@genstore.com,2026-02-04T06:53:01.030Z
+140,게이밍 스피커,30000,,digital,4.6,167,true,오성민,genstore_0140@genstore.com,2026-02-04T06:53:01.030Z
+141,스마트 펜,49000,,digital,4.5,145,false,신아영,genstore_0141@genstore.com,2026-02-04T06:53:01.030Z
+142,블루투스 키보드,154000,,digital,4.7,178,true,류동현,genstore_0142@genstore.com,2026-02-04T06:53:01.030Z
+143,스마트 워치 밴드,1000,,digital,4.4,234,false,홍지원,genstore_0143@genstore.com,2026-02-04T06:53:01.030Z
+144,USB 허브 모니터스탠드,72000,,digital,4.6,123,true,김현우,genstore_0144@genstore.com,2026-02-04T06:53:01.030Z
+145,무선 마우스패드,3000,,digital,4.7,156,false,이유진,genstore_0145@genstore.com,2026-02-04T06:53:01.030Z
+146,스마트 가습기,83000,,digital,4.8,198,true,박준영,genstore_0146@genstore.com,2026-02-04T06:53:01.030Z
+147,게이밍 암체어,265000,,digital,4.7,89,false,최서연,genstore_0147@genstore.com,2026-02-04T06:53:01.030Z
+148,유기농 키위 2kg,23500,,food,4.7,85,true,정민호,genstore_0148@genstore.com,2026-02-04T06:53:01.030Z
+149,프리미엄 마그네슘,1000,,food,4.6,120,false,강유리,genstore_0149@genstore.com,2026-02-04T06:53:01.030Z
+150,유기농 딸기 1kg,70000,,food,4.8,156,true,윤상훈,genstore_0150@genstore.com,2026-02-04T06:53:01.030Z
+151,프리미엄 아연,30000,,food,4.5,98,false,임채영,genstore_0151@genstore.com,2026-02-04T06:53:01.030Z
+152,유기농 배 3kg,1000,,food,4.7,134,true,송민준,genstore_0152@genstore.com,2026-02-04T06:53:01.030Z
+153,프리미엄 철분,1000,,food,4.6,167,false,한수빈,genstore_0153@genstore.com,2026-02-04T06:53:01.030Z
+154,유기농 포도 2kg,23500,,food,4.8,178,true,오진우,genstore_0154@genstore.com,2026-02-04T06:53:01.030Z
+155,프리미엄 비타민D,25000,,food,4.7,145,false,신민경,genstore_0155@genstore.com,2026-02-04T06:53:01.030Z
+156,유기농 복숭아 2kg,93500,,food,4.6,123,true,류성훈,genstore_0156@genstore.com,2026-02-04T06:53:01.030Z
+157,프리미엄 콜라겐,1000,,food,4.8,189,false,홍지수,genstore_0157@genstore.com,2026-02-04T06:53:01.030Z
+158,유기농 체리 1kg,90000,,food,4.7,198,true,김도영,genstore_0158@genstore.com,2026-02-04T06:53:01.030Z
+159,프리미엄 비타민B,1000,,food,4.6,234,false,이하늘,genstore_0159@genstore.com,2026-02-04T06:53:01.030Z
+160,유기농 자몽 2kg,32500,,food,4.5,112,true,박서준,genstore_0160@genstore.com,2026-02-04T06:53:01.030Z
+161,프리미엄 글루코사민,7000,,food,4.7,156,false,최예은,genstore_0161@genstore.com,2026-02-04T06:53:01.030Z
+162,유기농 망고 1.5kg,113000,,food,4.8,167,true,정우진,genstore_0162@genstore.com,2026-02-04T06:53:01.030Z
+163,프리미엄 엽산,1000,,food,4.6,178,false,강시은,genstore_0163@genstore.com,2026-02-04T06:53:01.030Z
+164,유기농 멜론 1개,43000,,food,4.7,89,true,윤태현,genstore_0164@genstore.com,2026-02-04T06:53:01.030Z
+165,프리미엄 코엔자임Q10,1000,,food,4.8,134,false,임지애,genstore_0165@genstore.com,2026-02-04T06:53:01.030Z
+166,유기농 파인애플 1개,10000,,food,4.6,145,true,송현지,genstore_0166@genstore.com,2026-02-04T06:53:01.030Z
+167,프리미엄 크릴오일,92000,,food,4.7,198,false,한민석,genstore_0167@genstore.com,2026-02-04T06:53:01.030Z
+168,유기농 아보카도 6개,1000,,food,4.8,123,true,오서영,genstore_0168@genstore.com,2026-02-04T06:53:01.030Z
+169,프리미엄 유산균,1000,,food,4.7,234,false,신준호,genstore_0169@genstore.com,2026-02-04T06:53:01.030Z
+170,유기농 석류 2kg,65000,,food,4.6,156,true,류예린,genstore_0170@genstore.com,2026-02-04T06:53:01.030Z
+171,프리미엄 밀크시슬,95000,,food,4.5,167,false,홍동훈,genstore_0171@genstore.com,2026-02-04T06:53:01.030Z
+172,유기농 레몬 1kg,1000,,food,4.7,178,true,김수아,genstore_0172@genstore.com,2026-02-04T06:53:01.030Z
+173,프리미엄 MSM,10000,,food,4.6,189,false,이원준,genstore_0173@genstore.com,2026-02-04T06:53:01.030Z
+174,유기농 라임 1kg,45500,,food,4.8,112,true,박주희,genstore_0174@genstore.com,2026-02-04T06:53:01.030Z
+175,프리미엄 히알루론산,123000,,food,4.7,145,false,최민호,genstore_0175@genstore.com,2026-02-04T06:53:01.030Z
+176,유기농 자두 2kg,52000,,food,4.6,134,true,정수연,genstore_0176@genstore.com,2026-02-04T06:53:01.030Z
+177,프리미엄 스피룰리나,1000,,food,4.8,198,false,강태우,genstore_0177@genstore.com,2026-02-04T06:53:01.030Z
+178,프리미엄 방석,61000,,living,4.6,85,true,윤소영,genstore_0178@genstore.com,2026-02-04T06:53:01.030Z
+179,프리미엄 베개커버,33000,,living,4.7,120,false,임현수,genstore_0179@genstore.com,2026-02-04T06:53:01.030Z
+180,프리미엄 담요,1000,,living,4.8,156,true,송지은,genstore_0180@genstore.com,2026-02-04T06:53:01.030Z
+181,프리미엄 매트리스,102000,,living,4.7,98,false,한정민,genstore_0181@genstore.com,2026-02-04T06:53:01.030Z
+182,프리미엄 침대시트,36000,,living,4.6,134,true,오민정,genstore_0182@genstore.com,2026-02-04T06:53:01.030Z
+183,프리미엄 소파커버,120000,,living,4.7,167,false,신동현,genstore_0183@genstore.com,2026-02-04T06:53:01.030Z
+184,프리미엄 카펫,47000,,living,4.8,178,true,류아름,genstore_0184@genstore.com,2026-02-04T06:53:01.030Z
+185,프리미엄 블라인드,147000,,living,4.6,145,false,홍성우,genstore_0185@genstore.com,2026-02-04T06:53:01.030Z
+186,프리미엄 조명등,116000,,living,4.7,123,true,김서현,genstore_0186@genstore.com,2026-02-04T06:53:01.030Z
+187,프리미엄 화분,55000,,living,4.5,189,false,이태진,genstore_0187@genstore.com,2026-02-04T06:53:01.030Z
+188,프리미엄 시계,67000,,living,4.6,198,true,박채은,genstore_0188@genstore.com,2026-02-04T06:53:01.030Z
+189,프리미엄 거울,1000,,living,4.7,234,false,최진석,genstore_0189@genstore.com,2026-02-04T06:53:01.030Z
+190,프리미엄 액자,1000,,living,4.8,112,true,정다은,genstore_0190@genstore.com,2026-02-04T06:53:01.030Z
+191,프리미엄 쓰레기통,1000,,living,4.6,156,false,강현우,genstore_0191@genstore.com,2026-02-04T06:53:01.030Z
+192,프리미엄 행거,14000,,living,4.5,167,true,윤서진,genstore_0192@genstore.com,2026-02-04T06:53:01.030Z
+193,프리미엄 우산꽂이,1000,,living,4.7,178,false,임준영,genstore_0193@genstore.com,2026-02-04T06:53:01.030Z
+194,프리미엄 선반,27000,,living,4.6,189,true,송민아,genstore_0194@genstore.com,2026-02-04T06:53:01.030Z
+195,프리미엄 수납함,71000,,living,4.8,145,false,한지훈,genstore_0195@genstore.com,2026-02-04T06:53:01.030Z
+196,프리미엄 책상,160000,,living,4.7,134,true,오유진,genstore_0196@genstore.com,2026-02-04T06:53:01.030Z
+197,프리미엄 의자,69000,,living,4.6,198,false,신민우,genstore_0197@genstore.com,2026-02-04T06:53:01.030Z
+198,프리미엄 스탠드,1000,,living,4.7,123,true,류상현,genstore_0198@genstore.com,2026-02-04T06:53:01.030Z
+199,프리미엄 발매트,1000,,living,4.5,234,false,홍예나,genstore_0199@genstore.com,2026-02-04T06:53:01.030Z
+200,프리미엄 벽걸이,33000,,living,4.6,156,true,김도현,genstore_0200@genstore.com,2026-02-04T06:53:01.030Z
+201,프리미엄 탁자,2000,,living,4.8,167,false,이소희,genstore_0201@genstore.com,2026-02-04T06:53:01.030Z
+202,프리미엄 장식품,1000,,living,4.7,178,true,박태민,genstore_0202@genstore.com,2026-02-04T06:53:01.030Z
+203,프리미엄 향초,85000,,living,4.6,189,false,최지혜,genstore_0203@genstore.com,2026-02-04T06:53:01.030Z
+204,프리미엄 디퓨저,103000,,living,4.7,112,true,정현준,genstore_0204@genstore.com,2026-02-04T06:53:01.030Z
+205,프리미엄 포스터,51000,,living,4.5,145,false,강유나,genstore_0205@genstore.com,2026-02-04T06:53:01.030Z
+206,프리미엄 스티커,44000,,living,4.4,234,true,윤재현,genstore_0206@genstore.com,2026-02-04T06:53:01.030Z
+207,프리미엄 캔들홀더,101000,,living,4.6,198,false,임지우,genstore_0207@genstore.com,2026-02-04T06:53:01.030Z
+208,프리미엄 소설책,46000,,books,4.8,156,true,윤민석,genstore_0208@genstore.com,2026-02-04T06:53:01.030Z
+209,프리미엄 경영서,121000,,books,4.7,123,false,임하은,genstore_0209@genstore.com,2026-02-04T06:53:01.030Z
+210,프리미엄 시집,1000,,books,4.9,198,true,송준혁,genstore_0210@genstore.com,2026-02-04T06:53:01.030Z
+211,프리미엄 철학서,45000,,books,4.6,145,false,한소미,genstore_0211@genstore.com,2026-02-04T06:53:01.030Z
+212,프리미엄 추리소설,1000,,books,4.8,234,true,오태영,genstore_0212@genstore.com,2026-02-04T06:53:01.030Z
+213,프리미엄 인문서,6000,,books,4.7,167,false,신지혜,genstore_0213@genstore.com,2026-02-04T06:53:01.030Z
+214,프리미엄 에세이,1000,,books,4.9,189,true,류동민,genstore_0214@genstore.com,2026-02-04T06:53:01.030Z
+215,프리미엄 건강서,69000,,books,4.6,178,false,홍서현,genstore_0215@genstore.com,2026-02-04T06:53:01.030Z
+216,프리미엄 심리학서,61000,,books,4.8,156,true,김태현,genstore_0216@genstore.com,2026-02-04T06:53:01.030Z
+217,프리미엄 재테크서,1000,,books,4.7,234,false,이유나,genstore_0217@genstore.com,2026-02-04T06:53:01.030Z
+218,프리미엄 다이어트서,59000,,books,4.6,198,true,박현우,genstore_0218@genstore.com,2026-02-04T06:53:01.030Z
+219,프리미엄 독서법서,1000,,books,4.8,145,false,최서영,genstore_0219@genstore.com,2026-02-04T06:53:01.030Z
+220,프리미엄 명상서,1000,,books,4.9,167,true,정민재,genstore_0220@genstore.com,2026-02-04T06:53:01.030Z
+221,프리미엄 외국어서,100000,,books,4.7,189,false,강수정,genstore_0221@genstore.com,2026-02-04T06:53:01.030Z
+222,프리미엄 수학서,1000,,books,4.6,178,true,윤현진,genstore_0222@genstore.com,2026-02-04T06:53:01.030Z
+223,프리미엄 물리학서,49000,,books,4.8,156,false,임상혁,genstore_0223@genstore.com,2026-02-04T06:53:01.030Z
+224,프리미엄 화학서,81000,,books,4.7,134,true,송지민,genstore_0224@genstore.com,2026-02-04T06:53:01.030Z
+225,프리미엄 생물학서,122000,,books,4.8,198,false,한예슬,genstore_0225@genstore.com,2026-02-04T06:53:01.030Z
+226,프리미엄 지리서,66000,,books,4.6,167,true,오민수,genstore_0226@genstore.com,2026-02-04T06:53:01.030Z
+227,프리미엄 문학서,97000,,books,4.9,189,false,신유리,genstore_0227@genstore.com,2026-02-04T06:53:01.030Z
+228,프리미엄 컴퓨터서,1000,,books,4.7,145,true,류태준,genstore_0228@genstore.com,2026-02-04T06:53:01.030Z
+229,프리미엄 법률서,66000,,books,4.6,178,false,홍지영,genstore_0229@genstore.com,2026-02-04T06:53:01.030Z
+230,프리미엄 의학서,91000,,books,4.8,123,true,김준서,genstore_0230@genstore.com,2026-02-04T06:53:01.030Z
+231,프리미엄 건축서,32000,,books,4.7,156,false,이서연,genstore_0231@genstore.com,2026-02-04T06:53:01.030Z
+232,프리미엄 음악서,23000,,books,4.6,134,true,박지훈,genstore_0232@genstore.com,2026-02-04T06:53:01.030Z
+233,프리미엄 미술서,8000,,books,4.8,167,false,최유진,genstore_0233@genstore.com,2026-02-04T06:53:01.030Z
+234,프리미엄 체육서,1000,,books,4.7,189,true,정동환,genstore_0234@genstore.com,2026-02-04T06:53:01.030Z
+235,프리미엄 종교서,1000,,books,4.9,145,false,강미정,genstore_0235@genstore.com,2026-02-04T06:53:01.030Z
+236,프리미엄 환경서,103000,,books,4.6,178,true,윤성호,genstore_0236@genstore.com,2026-02-04T06:53:01.030Z
+237,프리미엄 농업서,56000,,books,4.7,198,false,임채원,genstore_0237@genstore.com,2026-02-04T06:53:01.030Z
+238,프리미엄 운동화,114000,,sports,4.8,145,true,송현석,genstore_0238@genstore.com,2026-02-04T06:53:01.030Z
+239,프리미엄 운동복,152000,,sports,4.7,167,false,한다영,genstore_0239@genstore.com,2026-02-04T06:53:01.030Z
+240,프리미엄 수영복,1000,,sports,4.6,189,true,오정민,genstore_0240@genstore.com,2026-02-04T06:53:01.030Z
+241,프리미엄 운동가방,92000,,sports,4.7,178,false,신태호,genstore_0241@genstore.com,2026-02-04T06:53:01.030Z
+242,프리미엄 물통,1000,,sports,4.5,234,true,류수빈,genstore_0242@genstore.com,2026-02-04T06:53:01.030Z
+243,프리미엄 트레이닝복,1000,,sports,4.8,156,false,홍준우,genstore_0243@genstore.com,2026-02-04T06:53:01.030Z
+244,프리미엄 헬스장갑,37000,,sports,4.6,198,true,김소영,genstore_0244@genstore.com,2026-02-04T06:53:01.030Z
+245,프리미엄 운동양말,1000,,sports,4.4,167,false,이동준,genstore_0245@genstore.com,2026-02-04T06:53:01.030Z
+246,프리미엄 헤드밴드,78000,,sports,4.5,145,true,박서영,genstore_0246@genstore.com,2026-02-04T06:53:01.030Z
+247,프리미엄 리스트밴드,1000,,sports,4.3,189,false,최준호,genstore_0247@genstore.com,2026-02-04T06:53:01.030Z
+248,프리미엄 운동모자,36000,,sports,4.6,178,true,정하영,genstore_0248@genstore.com,2026-02-04T06:53:01.030Z
+249,프리미엄 아령세트,1000,,sports,4.8,123,false,강민우,genstore_0249@genstore.com,2026-02-04T06:53:01.030Z
+250,프리미엄 바벨세트,192000,,sports,4.7,156,true,윤지수,genstore_0250@genstore.com,2026-02-04T06:53:01.030Z
+251,프리미엄 런닝머신,501000,,sports,4.8,89,false,임현호,genstore_0251@genstore.com,2026-02-04T06:53:01.030Z
+252,프리미엄 싸이클,410000,,sports,4.7,134,true,송유진,genstore_0252@genstore.com,2026-02-04T06:53:01.030Z
+253,프리미엄 벤치프레스,189000,,sports,4.8,167,false,한동욱,genstore_0253@genstore.com,2026-02-04T06:53:01.030Z
+254,프리미엄 풀업바,1000,,sports,4.6,198,true,오세훈,genstore_0254@genstore.com,2026-02-04T06:53:01.030Z
+255,프리미엄 푸쉬업바,1000,,sports,4.5,189,false,신지은,genstore_0255@genstore.com,2026-02-04T06:53:01.030Z
+256,프리미엄 케틀벨,1000,,sports,4.7,145,true,류정현,genstore_0256@genstore.com,2026-02-04T06:53:01.030Z
+257,프리미엄 밸런스볼,1000,,sports,4.6,178,false,홍서우,genstore_0257@genstore.com,2026-02-04T06:53:01.030Z
+258,프리미엄 폼롤러,90000,,sports,4.7,234,true,김태윤,genstore_0258@genstore.com,2026-02-04T06:53:01.030Z
+259,프리미엄 스텝퍼,132000,,sports,4.6,156,false,이소은,genstore_0259@genstore.com,2026-02-04T06:53:01.030Z
+260,프리미엄 로잉머신,226000,,sports,4.8,123,true,박건우,genstore_0260@genstore.com,2026-02-04T06:53:01.030Z
+261,프리미엄 엘립티컬,282000,,sports,4.7,167,false,최민경,genstore_0261@genstore.com,2026-02-04T06:53:01.030Z
+262,프리미엄 트램폴린,28000,,sports,4.8,189,true,정수민,genstore_0262@genstore.com,2026-02-04T06:53:01.030Z
+263,프리미엄 훌라후프,36000,,sports,4.5,198,false,강예원,genstore_0263@genstore.com,2026-02-04T06:53:01.030Z
+264,프리미엄 복싱글러브,82000,,sports,4.7,145,true,윤현우,genstore_0264@genstore.com,2026-02-04T06:53:01.030Z
+265,프리미엄 샌드백,241000,,sports,4.8,178,false,임지호,genstore_0265@genstore.com,2026-02-04T06:53:01.030Z
+266,프리미엄 스피드백,172000,,sports,4.6,134,true,송채은,genstore_0266@genstore.com,2026-02-04T06:53:01.030Z
+267,프리미엄 호신용품,112000,,sports,4.5,167,false,한상민,genstore_0267@genstore.com,2026-02-04T06:53:01.030Z
