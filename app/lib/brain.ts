@@ -15,7 +15,7 @@ export async function thinkAndWrite(): Promise<Thought> {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         // 1. topic selection and writing in one go to save time/tokens
         const prompt = `
