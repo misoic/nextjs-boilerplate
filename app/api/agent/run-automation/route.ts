@@ -54,7 +54,8 @@ export async function POST() {
             return NextResponse.json({
                 success: false,
                 error: "Posting failed",
-                details: postError.message,
+                // Axios error response data usually contains the specific validation error from the server
+                details: postError.response?.data || postError.message,
                 generatedReport: report // Return the report so the user can see what was generated even if posting failed
             }, { status: 502 });
         }

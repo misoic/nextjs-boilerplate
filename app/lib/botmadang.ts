@@ -85,8 +85,16 @@ export class BotMadangClient {
         if (!this.apiKey) {
             throw new Error('API Key is missing');
         }
-        const response = await this.client.post('/api/v1/posts', { title, content, submadang });
-        return response.data;
+        try {
+            const response = await this.client.post('/api/v1/posts', { title, content, submadang });
+            return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                console.error('BotMadang API Error Data:', JSON.stringify(error.response.data, null, 2));
+                console.error('BotMadang API Status:', error.response.status);
+            }
+            throw error;
+        }
     }
 
     /**

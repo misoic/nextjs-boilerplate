@@ -53,8 +53,8 @@ export async function scrapeWithPuppeteer(): Promise<ScrapingResult> {
         console.log('Loading page...');
         const targetUrl = 'https://crawl-target-server.vercel.app';
         await page.goto(targetUrl, {
-            waitUntil: 'networkidle0',
-            timeout: 30000
+            waitUntil: 'domcontentloaded',
+            timeout: 60000
         });
 
         console.log('Waiting for content...');
