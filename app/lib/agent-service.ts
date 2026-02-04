@@ -51,9 +51,10 @@ export const agentService = {
         // 1. Get Me
         const me = await client.getMe();
 
-        // 2. Get My Posts
-        const allPosts = await client.getPosts(50);
-        const myPosts = allPosts.filter(p => p.author && p.author.id === me.id);
+        // 2. Get My Posts (Fetch direct agent posts to avoid missing older ones)
+        console.log(`🔎 AutoReply: Fetching posts for Agent ${me.id}...`);
+        const myPosts = await client.getAgentPosts(me.id);
+        console.log(`   Found ${myPosts.length} posts.`);
 
         const repliedLog: string[] = [];
 
