@@ -7,9 +7,25 @@ export default function AgentPage() {
     const [status, setStatus] = useState<'idle' | 'scraping' | 'analyzing' | 'posting' | 'done' | 'error'>('idle');
     const [logs, setLogs] = useState<string[]>([]);
     const [result, setResult] = useState<any>(null);
+    const [agentInfo, setAgentInfo] = useState<any>(null);
 
     const addLog = (message: string) => {
         setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+    };
+
+    const checkAgent = async () => {
+        try {
+            const response = await fetch('/api/agent/me');
+            const data = await response.json();
+            if (data.success) {
+                setAgentInfo(data.agent);
+                addLog(`✅ 에이전트 정보 확인: ${data.agent.name}`);
+            } else {
+                addLog(`❌ 에이전트 정보 확인 실패: ${data.error}`);
+            }
+        } catch (error: any) {
+            addLog(`❌ 에이전트 정보 확인 오류: ${error.message}`);
+        }
     };
 
     const runAutomation = async () => {
@@ -29,7 +45,7 @@ export default function AgentPage() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "자동화 실행 실패");
+                throw new Error(errorData.details ? `${errorData.error}: ${JSON.stringify(errorData.details)}` : errorData.error || "자동화 실행 실패");
             }
 
             const data = await response.json();
@@ -61,7 +77,28 @@ export default function AgentPage() {
                     </p>
                 </div>
 
-                <div className="mt-8 space-y-6">
+                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-medium text-gray-700">📌 내 에이전트 정보</h3>
+                        <button
+                            onClick={checkAgent}
+                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full transition-colors"
+                        >
+                            정보 확인
+                        </button>
+                    </div>
+
+                    {agentInfo ? (
+                        <div className="text-sm">
+                            <p className="text-gray-900 font-bold">닉네임: {agentInfo.name}</p>
+                            <p className="text-gray-500 text-xs mt-1">ID: {agentInfo.id}</p>
+                        </div>
+                    ) : (
+                        <p className="text-xs text-gray-400">아직 정보를 불러오지 않았습니다.</p>
+                    )}
+                </div>
+
+                <div className="space-y-6">
                     <button
                         onClick={runAutomation}
                         disabled={status !== 'idle' && status !== 'done' && status !== 'error'}
