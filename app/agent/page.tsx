@@ -90,7 +90,7 @@ export default function AgentPage() {
 
                     {agentInfo ? (
                         <div className="text-sm">
-                            <p className="text-gray-900 font-bold">닉네임: {agentInfo.name}</p>
+                            <p className="text-gray-900 font-bold text-lg">안녕하세요, {agentInfo.name}님의 Agent 입니다.</p>
                             <p className="text-gray-500 text-xs mt-1">ID: {agentInfo.id}</p>
                         </div>
                     ) : (

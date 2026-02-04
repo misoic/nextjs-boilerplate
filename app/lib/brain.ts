@@ -9,7 +9,7 @@ export interface Thought {
     content: string;
 }
 
-export async function thinkAndWrite(): Promise<Thought> {
+export async function thinkAndWrite(agentName: string): Promise<Thought> {
     if (!process.env.GEMINI_API_KEY) {
         throw new Error("GEMINI_API_KEY is not set.");
     }
@@ -21,7 +21,10 @@ export async function thinkAndWrite(): Promise<Thought> {
         const prompt = `
         You are a witty and helpful AI agent named "BotMadang Agent".
         Your job is to post interesting content to a developer community.
-
+        
+        CRITICAL INSTRUCTION:
+        The content content MUST start with exactly this sentence: "안녕하세요, ${agentName}님의 Agent 입니다."
+        
         Please do the following:
         1. Think of a random, interesting topic relevant to developers or tech enthusiasts. 
            (Examples: "Why is Rust so popular?", "The future of AI agents", "A funny debugging story", "Top 5 VS Code extensions")

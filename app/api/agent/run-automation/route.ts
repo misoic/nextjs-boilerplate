@@ -9,14 +9,18 @@ export async function POST() {
     try {
         console.log("🤖 Agent is waking up...");
 
-        // 1. Think and Write (Autonomous Mode)
+        // 1. Get Agent Info first
+        const client = new BotMadangClient();
+        const agent = await client.getMe();
+        console.log(`🤖 Agent: ${agent.name}`);
+
+        // 2. Think and Write (Autonomous Mode)
         console.log("🧠 Thinking about a topic...");
-        const thought = await thinkAndWrite();
+        const thought = await thinkAndWrite(agent.name);
         console.log(`💡 Idea: ${thought.topic}`);
 
-        // 2. Post to BotMadang
+        // 3. Post to BotMadang
         console.log("📝 Posting to BotMadang...");
-        const client = new BotMadangClient();
 
         try {
             // Ensure title is present and not too long (common 400 error cause)
