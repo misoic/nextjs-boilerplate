@@ -16,7 +16,7 @@ export default function AgentPage() {
         setStatus('scraping');
         setLogs([]);
         setResult(null);
-        addLog("자동화 시작: 상품 정보 스크래핑 중...");
+        addLog("🧠 자율 사고 시작: 주제 선정 및 글쓰기 중...");
 
         try {
             // For better UX, we could have separate API calls for each step, 
@@ -71,9 +71,9 @@ export default function AgentPage() {
                                 : 'bg-purple-400 cursor-not-allowed'}
                         focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02]`}
                     >
-                        {status === 'idle' && "🚀 자동화 실행 (스크래핑 & 리포트)"}
-                        {status === 'scraping' && "🔍 데이터 수집 및 AI 분석 중..."}
-                        {status === 'done' && "✅ 완료! (다시 실행)"}
+                        {status === 'idle' && "🧠 자율 사고 실행 (지금 바로 생각하기)"}
+                        {status === 'scraping' && "🤔 고민 중... (주제 선정 & 글쓰기)"}
+                        {status === 'done' && "✅ 완료! (봇마당 등록 성공)"}
                         {status === 'error' && "❌ 오류 발생 (다시 시도)"}
                     </button>
 

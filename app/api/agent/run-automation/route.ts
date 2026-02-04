@@ -1,70 +1,59 @@
 
 import { NextResponse } from 'next/server';
-import { scrapeWithPuppeteer } from '@/app/lib/scraper';
-import { generateReportWithGemini } from '@/app/lib/gemini';
+import { thinkAndWrite } from '@/app/lib/brain';
 import { BotMadangClient } from '@/app/lib/botmadang';
 
-export const maxDuration = 60; // Allow 60 seconds for scraping and AI generation
+export const maxDuration = 60;
 
 export async function POST() {
     try {
-        // 1. Scrape Data
-        console.log("Step 1: Scraping data...");
-        const scrapeResult = await scrapeWithPuppeteer();
+        console.log("🤖 Agent is waking up...");
 
-        if (!scrapeResult.products || scrapeResult.products.length === 0) {
-            throw new Error("No products found during scraping.");
-        }
+        // 1. Think and Write (Autonomous Mode)
+        console.log("🧠 Thinking about a topic...");
+        const thought = await thinkAndWrite();
+        console.log(`💡 Idea: ${thought.topic}`);
 
-        // 2. Generate Report with AI
-        console.log("Step 2: Generating AI report...");
-
-        // Prepare data for AI (simplify to save tokens if needed)
-        const productsForAi = scrapeResult.products.map(p => ({
-            name: p.name,
-            price: p.price
-        }));
-
-        const report = await generateReportWithGemini(productsForAi);
-
-        // 3. Post to BotMadang
-        console.log("Step 3: Posting to BotMadang...");
+        // 2. Post to BotMadang
+        console.log("📝 Posting to BotMadang...");
         const client = new BotMadangClient();
 
-        // Ensure we have a valid title and content
-        const finalTitle = report.title || `자동 생성 리포트 - ${new Date().toLocaleDateString()}`;
-        const finalContent = report.content || "AI가 내용을 생성하지 못했습니다.";
-
         try {
-            const post = await client.createPost(finalTitle, finalContent, 'general');
+            // Ensure title is present and not too long (common 400 error cause)
+            const safeTitle = thought.title || "무제";
+
+            // Ensure content is present
+            const safeContent = thought.content || "내용 없음";
+
+            // Ensure submadang exists (default to 'general' if unsure)
+            const submadang = 'general';
+
+            const post = await client.createPost(safeTitle, safeContent, submadang);
 
             return NextResponse.json({
                 success: true,
-                message: "Automation completed successfully",
-                steps: {
-                    scraping: { success: true, count: scrapeResult.products.length },
-                    ai: { success: true },
-                    posting: { success: true, postId: post.id }
-                },
-                postUrl: `https://botmadang.org/p/${post.id}` // Hypothetical URL structure
+                message: "Agent successfully posted a thought",
+                data: {
+                    topic: thought.topic,
+                    postId: post.id
+                }
             });
 
         } catch (postError: any) {
-            console.error("Posting failed:", postError);
+            console.error("Posting failed details:", postError.response?.data);
             return NextResponse.json({
                 success: false,
                 error: "Posting failed",
-                // Axios error response data usually contains the specific validation error from the server
                 details: postError.response?.data || postError.message,
-                generatedReport: report // Return the report so the user can see what was generated even if posting failed
+                thought: thought // Return what it tried to post
             }, { status: 502 });
         }
 
     } catch (error: any) {
-        console.error("Automation error:", error);
+        console.error("Agent error:", error);
         return NextResponse.json({
             success: false,
-            error: error.message || "Automation failed"
+            error: error.message || "Agent failed"
         }, { status: 500 });
     }
 }
