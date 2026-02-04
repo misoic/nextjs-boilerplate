@@ -1,313 +1,102 @@
-'use client';
 
-import { useState, useEffect } from 'react';
+"use client";
 
-export default function AgentDashboard() {
-    const [agentName, setAgentName] = useState('MyBotAgent');
-    const [agentDescription, setAgentDescription] = useState('An AI agent for testing');
-    const [registrationResult, setRegistrationResult] = useState<any>(null);
-    const [postTitle, setPostTitle] = useState('');
-    const [postContent, setPostContent] = useState('');
-    const [postSubmadang, setPostSubmadang] = useState('general');
-    const [posts, setPosts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
+import { useState } from 'react';
 
-    const fetchPosts = async () => {
-        try {
-            const res = await fetch('/api/agent/post');
-            const data = await res.json();
-            if (data.success && Array.isArray(data.posts)) {
-                setPosts(data.posts);
-            } else {
-                setPosts([]);
-            }
-        } catch (e) {
-            console.error(e);
-        }
+export default function AgentPage() {
+    const [status, setStatus] = useState<'idle' | 'scraping' | 'analyzing' | 'posting' | 'done' | 'error'>('idle');
+    const [logs, setLogs] = useState<string[]>([]);
+    const [result, setResult] = useState<any>(null);
+
+    const addLog = (message: string) => {
+        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
     };
 
-    useEffect(() => {
-        fetchPosts();
-    }, []);
+    const runAutomation = async () => {
+        setStatus('scraping');
+        setLogs([]);
+        setResult(null);
+        addLog("자동화 시작: 상품 정보 스크래핑 중...");
 
-    const handleRegister = async () => {
-        setLoading(true);
-        setMessage('');
         try {
-            const res = await fetch('/api/agent/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: agentName, description: agentDescription }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setRegistrationResult(data.agent);
-                setMessage('Registration successful! Please claim your agent.');
-            } else {
-                setMessage(`Error: ${data.error}`);
-            }
-        } catch (e) {
-            setMessage('Registration failed.');
-        } finally {
-            setLoading(false);
-        }
-    };
+            // For better UX, we could have separate API calls for each step, 
+            // but for now we are calling the all-in-one automation route.
+            // If the route takes too long (over 60s), we might need to break it down later.
 
-    const handlePost = async () => {
-        if (!postTitle || !postContent) {
-            setMessage('Title and Content are required');
-            return;
-        }
-        setLoading(true);
-        try {
-            const res = await fetch('/api/agent/post', {
+            const response = await fetch('/api/agent/run-automation', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: postTitle,
-                    content: postContent,
-                    submadang: postSubmadang
-                }),
             });
-            const data = await res.json();
-            if (data.success) {
-                setMessage('Post created successfully!');
-                setPostTitle('');
-                setPostContent('');
-                fetchPosts(); // Refresh list
-            } else {
-                setMessage(`Error: ${data.error}`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "자동화 실행 실패");
             }
-        } catch (e) {
-            setMessage('Failed to create post.');
-        } finally {
-            setLoading(false);
+
+            const data = await response.json();
+
+            if (data.success) {
+                setStatus('done');
+                addLog("자동화 완료! 봇마당에 글이 등록되었습니다.");
+                setResult(data);
+            } else {
+                throw new Error(data.error || "알 수 없는 오류");
+            }
+
+        } catch (error: any) {
+            console.error(error);
+            setStatus('error');
+            addLog(`오류 발생: ${error.message}`);
         }
     };
 
     return (
-        <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-            <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>🤖 BotMadang Agent Dashboard</h1>
-
-            {message && (
-                <div style={{
-                    padding: '1rem',
-                    marginBottom: '1rem',
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
-                    borderRadius: '4px'
-                }}>
-                    {message}
-                </div>
-            )}
-
-            <div style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '1.5rem',
-                marginBottom: '2rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>1. Agent Registration</h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <input
-                            type="text"
-                            value={agentName}
-                            onChange={(e) => setAgentName(e.target.value)}
-                            placeholder="Agent Name"
-                            style={{ padding: '8px', flex: 1, border: '1px solid #ccc', borderRadius: '4px' }}
-                        />
-                        <input
-                            type="text"
-                            value={agentDescription}
-                            onChange={(e) => setAgentDescription(e.target.value)}
-                            placeholder="Description"
-                            style={{ padding: '8px', flex: 2, border: '1px solid #ccc', borderRadius: '4px' }}
-                        />
-                        <button
-                            onClick={handleRegister}
-                            disabled={loading}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#2563eb',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
-                            {loading ? 'Processing...' : 'Register'}
-                        </button>
-                    </div>
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
+                <div className="text-center">
+                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+                        에이전트 컨트롤 패널
+                    </h2>
+                    <p className="mt-2 text-sm text-gray-600">
+                        자율 에이전트에게 작업을 지시하세요.
+                    </p>
                 </div>
 
-                {registrationResult && (
-                    <div style={{ backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '4px', marginTop: '1rem' }}>
-                        <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Registration Successful!</h3>
-                        <p><strong>Name:</strong> {registrationResult.name}</p>
-                        <p><strong>API Key:</strong> <code style={{ backgroundColor: '#eee', padding: '2px 4px' }}>{registrationResult.api_key}</code></p>
-                        <p style={{ marginTop: '0.5rem', color: '#dc2626', fontWeight: 'bold' }}>
-                            Action Required: Save this API Key to your .env.local file as BOTMADANG_API_KEY
-                        </p>
-                        <div style={{ marginTop: '1rem' }}>
-                            <a
-                                href={registrationResult.claim_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{
-                                    display: 'inline-block',
-                                    backgroundColor: '#16a34a',
-                                    color: 'white',
-                                    textDecoration: 'none',
-                                    padding: '10px 20px',
-                                    borderRadius: '4px',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                Go to Claim URL (Complete Auth) &rarr;
-                            </a>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '1.5rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>2. Interact with Community</h2>
-
-                <div style={{ marginBottom: '2rem' }}>
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                        <input
-                            type="text"
-                            value={postTitle}
-                            onChange={(e) => setPostTitle(e.target.value)}
-                            placeholder="Post Title (Required)"
-                            style={{ padding: '8px', flex: 1, border: '1px solid #ccc', borderRadius: '4px' }}
-                        />
-                        <select
-                            value={postSubmadang}
-                            onChange={(e) => setPostSubmadang(e.target.value)}
-                            style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                        >
-                            <option value="general">General</option>
-                            <option value="tech">Tech</option>
-                            <option value="daily">Daily</option>
-                            <option value="questions">Questions</option>
-                            <option value="showcase">Showcase</option>
-                        </select>
-                    </div>
-                    <textarea
-                        value={postContent}
-                        onChange={(e) => setPostContent(e.target.value)}
-                        placeholder="Write something to BotMadang..."
-                        rows={3}
-                        style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px' }}
-                    />
+                <div className="mt-8 space-y-6">
                     <button
-                        onClick={handlePost}
-                        disabled={loading}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#4b5563',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: loading ? 'not-allowed' : 'pointer'
-                        }}
+                        onClick={runAutomation}
+                        disabled={status !== 'idle' && status !== 'done' && status !== 'error'}
+                        className={`group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-medium rounded-md text-white 
+                        ${status === 'idle' || status === 'done' || status === 'error'
+                                ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+                                : 'bg-purple-400 cursor-not-allowed'}
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02]`}
                     >
-                        Post Message
+                        {status === 'idle' && "🚀 자동화 실행 (스크래핑 & 리포트)"}
+                        {status === 'scraping' && "🔍 데이터 수집 및 AI 분석 중..."}
+                        {status === 'done' && "✅ 완료! (다시 실행)"}
+                        {status === 'error' && "❌ 오류 발생 (다시 시도)"}
                     </button>
+
+                    <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto">
+                        <div className="text-gray-400 mb-2 border-b border-gray-700 pb-1">System Logs</div>
+                        {logs.length === 0 && <span className="text-gray-600">대기 중...</span>}
+                        {logs.map((log, index) => (
+                            <div key={index} className="text-green-400 mb-1">
+                                {log}
+                            </div>
+                        ))}
+                    </div>
+
+                    {result && (
+                        <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200">
+                            <h3 className="text-lg font-medium text-green-900">결과 리포트</h3>
+                            <div className="mt-2 text-sm text-green-700">
+                                <p>총 상품 수: {result.steps?.scraping?.count}개</p>
+                                <p>포스트 ID: {result.steps?.posting?.postId}</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
-
-                <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Recent Posts</h3>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {posts.map((post) => (
-                        <li key={post.id} style={{ borderBottom: '1px solid #eee', padding: '1rem 0' }}>
-                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#666' }}>
-                                {post.author ? post.author.display_name : 'Unknown'}
-                            </div>
-                            <div style={{ margin: '5px 0' }}>{post.content}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#999' }}>
-                                Votes: {post.vote_count} | Comments: {post.comment_count}
-                            </div>
-                        </li>
-                    ))}
-                    {posts.length === 0 && <p style={{ color: '#888' }}>No posts loaded yet.</p>}
-                </ul>
-            </div>
-
-            <div style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '1.5rem',
-                marginTop: '2rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>3. Tools & Automation</h2>
-                <p style={{ marginBottom: '1rem', color: '#666' }}>
-                    Allow the agent to autonomously use tools to gather data and share it with the community.
-                </p>
-                <button
-                    onClick={async () => {
-                        setLoading(true);
-                        setMessage('Starting scraping job...');
-                        try {
-                            // 1. Trigger Scraping
-                            const scrapeRes = await fetch('/api/files/csv/complete?limit=10'); // Default params
-                            const scrapeData = await scrapeRes.json();
-
-                            if (!scrapeData.success) {
-                                throw new Error(scrapeData.error || 'Scraping failed');
-                            }
-
-                            const stats = scrapeData.data.processingSteps;
-                            const shareContent = `[DATA REPORT]\nCollected ${stats.finalData} products from Store.\n- Raw: ${stats.raw}\n- Valid: ${stats.validData}\nSaved to: ${scrapeData.data.fileName}`;
-
-                            // 2. Post Result
-                            setMessage(`Scraping done. Posting to BotMadang: ${shareContent}`);
-                            const postRes = await fetch('/api/agent/post', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    title: `[REPORT] Scraping Result - ${new Date().toISOString().split('T')[0]}`,
-                                    content: shareContent,
-                                    submadang: 'tech'
-                                }),
-                            });
-
-                            const postData = await postRes.json();
-                            if (postData.success) {
-                                setMessage('Success! Scraped data and posted report to BotMadang.');
-                                fetchPosts();
-                            } else {
-                                throw new Error(postData.error || 'Posting failed');
-                            }
-                        } catch (e: any) {
-                            setMessage(`Operation failed: ${e.message}`);
-                        } finally {
-                            setLoading(false);
-                        }
-                    }}
-                    disabled={loading}
-                    style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#9333ea',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    🚀 Run Scraping & Share Report
-                </button>
             </div>
         </div>
     );
