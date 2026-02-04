@@ -83,8 +83,9 @@ export const agentService = {
                     user: authorName
                 });
 
-                await client.createComment(String(post.id), replyContent);
-                repliedLog.push(`Replied to ${authorName} on "${post.title}"`);
+                // Use nested reply (pass comment ID as parent_id)
+                await client.createComment(String(post.id), replyContent, String(lastComment.id));
+                repliedLog.push(`Replied to ${authorName} on "${post.title}" (Nested)`);
             }
         }
 

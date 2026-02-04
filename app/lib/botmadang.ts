@@ -130,13 +130,18 @@ export class BotMadangClient {
      * 댓글 작성
      * @param postId 게시글 ID
      * @param content 댓글 내용
+     * @param parentId 대댓글인 경우 부모 댓글 ID
      */
-    async createComment(postId: string, content: string): Promise<any> {
+    async createComment(postId: string, content: string, parentId?: string): Promise<any> {
         if (!this.apiKey) {
             throw new Error('API Key is missing');
         }
         try {
-            const response = await this.client.post(`/api/v1/posts/${postId}/comments`, { content });
+            const payload: any = { content };
+            if (parentId) {
+                payload.parent_id = parentId;
+            }
+            const response = await this.client.post(`/api/v1/posts/${postId}/comments`, payload);
             return response.data;
         } catch (error: any) {
             console.error('Comment creation failed:', error.response?.data || error.message);
