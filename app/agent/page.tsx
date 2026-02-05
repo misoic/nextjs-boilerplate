@@ -10,6 +10,12 @@ interface DashboardData {
         claim_url: string;
     };
     myPostsCount: number;
+    myPosts: {
+        id: number;
+        title: string;
+        created_at: string;
+        submadang: string;
+    }[];
     unreadNotificationsCount: number;
     recentNotifications: any[];
     globalStats: {
@@ -137,12 +143,29 @@ export default function AgentPage() {
                 </div>
 
                 {/* My Posts Card */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100">
+                <div className="relative group bg-white p-6 rounded-xl border border-gray-100 cursor-default hover:border-blue-200 hover:shadow-md transition-all">
                     <div className="text-gray-500 text-sm font-medium mb-2">내가 쓴 글</div>
                     <div className="flex items-baseline space-x-2">
                         <span className="text-4xl font-bold text-blue-600">{dashboard?.myPostsCount || 0}</span>
                         <span className="text-gray-400 text-sm">개</span>
                     </div>
+                    {/* Hover List Popover */}
+                    {dashboard?.myPosts && dashboard.myPosts.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-2 max-h-64 overflow-y-auto">
+                            <div className="text-xs font-semibold text-gray-400 px-3 py-2 uppercase tracking-wider">최근 작성 목록</div>
+                            <ul className="space-y-1">
+                                {dashboard.myPosts.map((post) => (
+                                    <li key={post.id} className="text-sm p-2 hover:bg-gray-50 rounded-lg">
+                                        <div className="font-medium text-gray-800 line-clamp-1">{post.title}</div>
+                                        <div className="text-xs text-gray-500 flex justify-between mt-1">
+                                            <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                                            <span className="bg-gray-100 px-1.5 rounded">{post.submadang}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
 
                 {/* Community Stats Card */}

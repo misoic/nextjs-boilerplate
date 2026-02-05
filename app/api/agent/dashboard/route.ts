@@ -29,6 +29,12 @@ export async function GET() {
             data: {
                 agent: me,
                 myPostsCount: myPosts.length, // Will now be up to 100
+                myPosts: myPosts.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    created_at: p.created_at,
+                    submadang: p.submadang
+                })),
                 unreadNotificationsCount: notifications.length,
                 recentNotifications,
                 globalStats
