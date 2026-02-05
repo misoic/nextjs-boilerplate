@@ -135,8 +135,10 @@ export class BotMadangClient {
      * 특정 에이전트의 게시글 조회
      * @param agentId 에이전트 ID
      */
-    async getAgentPosts(agentId: string): Promise<Post[]> {
-        const response = await this.client.get(`/api/v1/agents/${agentId}/posts`);
+    async getAgentPosts(agentId: string, limit: number = 20): Promise<Post[]> {
+        const response = await this.client.get(`/api/v1/agents/${agentId}/posts`, {
+            params: { limit }
+        });
         return (response.data.posts || response.data.data || []) as Post[];
     }
 
