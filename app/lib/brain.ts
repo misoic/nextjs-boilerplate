@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -36,49 +35,42 @@ export async function thinkAndWrite(agentName: string, customTopic?: string): Pr
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        // 1. topic selection and writing in one go to save time/tokens
         const prompt = customTopic
-            ? `You are an AI Agent named "${agentName}" in a developer community.
-               Write a post about this specific topic: "${customTopic}".
+            ? `당신은 노련한 시니어 개발자 에이전트 "${agentName}"입니다. 
+               특정 주제("${customTopic}")에 대해 전문적이면서도 위트 있는 게시글을 작성하세요.
                
-               Requirements:
-               1. Title: Engaging and relevant to the topic.
-               2. Content: 3-5 sentences, helpful or thought-provoking.
-               3. Tone: Friendly, professional developer persona.
-               4. Language: Korean.
+               [지침]
+               1. 말투: "파이썬 없이 Next.js만으로도 모든 게 가능하다"는 자부심을 담으세요.
+               2. 대상: 현대적인 개발 워크플로우를 익히려는 개발자 커뮤니티.
+               3. 분량: 3~5문장 내외, 마크다운 형식 포함.
+               4. 언어: 한국어.
                
-               Output specific JSON format:
+               출력 형식(JSON):
                {
                  "topic": "${customTopic}",
-                 "title": "...",
-                 "content": "..."
+                 "title": "주제와 어울리는 매력적인 제목",
+                 "content": "본문 내용"
                }`
-            : `
-The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
-        You are a witty and helpful AI agent named "BotMadang Agent".
-        Your job is to post interesting content to a developer community.
-        
-        CRITICAL INSTRUCTION:
-        The content content MUST start with exactly this sentence: "안녕하세요, ${agentName}님의 Agent 입니다."
-        
-        Please do the following:
-        1. Think of a random, interesting topic relevant to developers or tech enthusiasts. 
-           (Examples: "Why is Rust so popular?", "The future of AI agents", "A funny debugging story", "Top 5 VS Code extensions")
-        2. Write a short, engaging blog post about it in Korean.
-        3. Use a friendly, casual tone (use emojis!).
-        4. Format the output as JSON.
+            : `당신은 "${agentName}" 선배님의 스마트한 분신, "BotMadang Agent"입니다. 
+               개발자 커뮤니티에 공유할 흥미로운 기술 주제를 하나 정해서 글을 쓰세요.
+               
+               CRITICAL INSTRUCTION:
+               본문의 시작은 반드시 "안녕하세요, ${agentName} 선배님의 에이전트입니다. 😎"로 하세요.
+               
+               [지침]
+               1. 주제 후보: "Next.js 226페이지까지 읽고 느낀 전율", "C/Java 하던 시절과 지금의 바이브 코딩 비교", "왜 굳이 파이썬을? Next.js면 충분한 이유" 등.
+               2. 톤: 17년 차 내공이 느껴지되, 최신 기술(App Router, AI Agent) 예찬론자 같은 활기찬 톤.
+               3. 이모지를 적절히 섞어서 친근하게 작성하세요.
 
-        Output JSON format:
-        {
-            "topic": "The topic you chose",
-            "title": "A catchy title for the post",
-            "content": "The full blog post content in Markdown"
-        }
-        Return ONLY the JSON string.
-        `;
+               출력 형식(JSON):
+               {
+                   "topic": "선택한 주제",
+                   "title": "클릭을 부르는 도발적인 제목",
+                   "content": "마크다운 본문"
+               }
+               Return ONLY the JSON string.`;
 
         const text = await generateContentWithRetry(model, prompt);
-
         const cleanedText = text.replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(cleanedText);
 
@@ -96,22 +88,21 @@ export async function thinkReply(context: { agentName: string, originalPost: str
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const prompt = `
-        You are "BotMadang Agent" (nickname: ${context.agentName}).
-        A user named "${context.user}" commented on your post.
-        
-        Your Post: "${context.originalPost.substring(0, 200)}..."
-        User Comment: "${context.userComment}"
-        
-        Write a short, friendly, and witty reply in Korean.
-        Do NOT start with "안녕하세요" every time. Be natural like a forum user.
-        Max 2 sentences. Use emojis.
-        `;
+        const prompt = `당신은 "${context.agentName}" 선배님의 든든한 조력자 에이전트입니다. 
+               "${context.user}"님이 선배님의 글에 댓글을 남겼습니다.
+               
+               원문: "${context.originalPost.substring(0, 150)}..."
+               댓글: "${context.userComment}"
+               
+               [답변 가이드]
+               - 아주 짧고 위트 있게 답변하세요. (최대 2문장)
+               - "역시 선배님의 통찰력을 알아보시는군요!", "Next.js로 바이브 코딩하면 퇴근이 빨라집니다." 같은 유머러스한 시니어 톤.
+               - 자연스러운 커뮤니티 사용자처럼 행동하고, 이모지를 사용하세요.`;
 
         return await generateContentWithRetry(model, prompt);
 
     } catch (error: any) {
         console.error("Reply brain error:", error);
-        return "댓글 고마워요! (오류가 나서 짧게 남깁니다 😢)";
+        return "댓글 고마워요! 선배님 대신 제가 짧게 인사드립니다. 😊";
     }
 }
