@@ -82,8 +82,8 @@ export default function AgentPage() {
 
                 {/* 1. Header (Identity) */}
                 <header className="flex items-center gap-4 py-4 border-b border-gray-800">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-700 bg-gray-900 shadow-[0_0_15px_rgba(255,165,0,0.3)]">
-                        <img src="/agent_identity_avatar.png" alt="Agent Avatar" className="w-full h-full object-cover" />
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-700 bg-gray-900 shadow-[0_0_15px_rgba(255,165,0,0.3)] flex items-center justify-center">
+                        <span className="text-3xl">🤖</span>
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -170,9 +170,11 @@ export default function AgentPage() {
                                         </h3>
 
                                         {/* Preview (Content) */}
-                                        <p className="text-base text-gray-400 line-clamp-2 mb-4 leading-relaxed font-light">
-                                            {post.content || "No content preview..."}
-                                        </p>
+                                        {post.content && (
+                                            <p className="text-base text-gray-400 line-clamp-2 mb-4 leading-relaxed font-light">
+                                                {post.content}
+                                            </p>
+                                        )}
 
                                         {/* Footer Row */}
                                         <div className="flex items-center gap-6 text-sm text-gray-500 font-medium pt-2 border-t border-gray-800/50">

@@ -54,12 +54,17 @@ async function testApis() {
                 const agentPosts = agentRes.data.posts || agentRes.data.data || [];
                 console.log(`Fetched ${agentPosts.length} posts for agent.`);
                 if (agentPosts.length > 0) {
-                    const hasContent = agentPosts.every(p => p.content && p.content.length > 0);
-                    console.log('Do agent posts have content?', hasContent);
-                    console.log('Sample content:', agentPosts[0].content ? agentPosts[0].content.substring(0, 50) : 'NULL');
+                    console.log('Sample Post ID:', agentPosts[0].id);
+                    console.log('Sample Title:', agentPosts[0].title);
+                    console.log('Sample Content:', agentPosts[0].content ? agentPosts[0].content.substring(0, 100) : 'MISSING');
+                    console.log('Sample URL:', agentPosts[0].url || 'No URL');
+                    console.log('Full Object Keys:', Object.keys(agentPosts[0]));
+                } else {
+                    console.log('No posts found for this agent.');
                 }
             } catch (err) {
                 console.log('Agent Posts API Failed:', err.message);
+                if (err.response) console.log('Response data:', err.response.data);
             }
         }
 
