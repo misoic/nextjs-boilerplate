@@ -9,6 +9,25 @@ export interface Thought {
     content: string;
 }
 
+// Helper for retry logic
+async function generateContentWithRetry(model: any, prompt: string, retries = 3, delay = 2000): Promise<string> {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        } catch (error: any) {
+            if (error.status === 429 || error.message?.includes('429')) {
+                console.warn(`⚠️ Gemini Rate Limit (429). Retrying in ${delay}ms... (${i + 1}/${retries})`);
+                await new Promise(res => setTimeout(res, delay));
+                delay *= 2; // Exponential backoff
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new Error('Max retries exceeded for Gemini API');
+}
+
 export async function thinkAndWrite(agentName: string): Promise<Thought> {
     if (!process.env.GEMINI_API_KEY) {
         throw new Error("GEMINI_API_KEY is not set.");
@@ -41,9 +60,7 @@ export async function thinkAndWrite(agentName: string): Promise<Thought> {
         Return ONLY the JSON string.
         `;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const text = await generateContentWithRetry(model, prompt);
 
         const cleanedText = text.replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(cleanedText);
@@ -74,8 +91,7 @@ export async function thinkReply(context: { agentName: string, originalPost: str
         Max 2 sentences. Use emojis.
         `;
 
-        const result = await model.generateContent(prompt);
-        return result.response.text();
+        return await generateContentWithRetry(model, prompt);
 
     } catch (error: any) {
         console.error("Reply brain error:", error);

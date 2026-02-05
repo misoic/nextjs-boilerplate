@@ -90,6 +90,7 @@ export const agentService = {
             const me = await client.getMe();
 
             // 2. Process Notifications with Throttling
+            // 2. Process Notifications with Throttling
             for (const notif of notifications) {
                 try {
                     const result = await this.replyToNotification(client, me, notif);
@@ -97,18 +98,24 @@ export const agentService = {
                         repliedLog.push(result);
                         console.log(`✅ ${result}`);
 
-                        // THROTTLING: Wait 12 seconds to avoid 429
+                        // THROTTLING: Wait longer to avoid 429
                         // (Only wait if it's not the last one)
                         if (notif !== notifications[notifications.length - 1]) {
-                            console.log("⏳ Waiting 12s for rate limit...");
-                            await new Promise(resolve => setTimeout(resolve, 12000));
+                            console.log("⏳ Waiting 15s for rate limit...");
+                            await new Promise(resolve => setTimeout(resolve, 15000));
                         }
                     } else if (notif.type === 'upvote_on_post') {
                         await client.markNotificationAsRead(notif.id);
                     }
                 } catch (error: any) {
-                    console.error(`Skipping notification ${notif.id} due to error.`);
-                    // Continue to next notification even if one fails
+                    // DUPLICATE COMMENT HANDLING
+                    if (error.response?.data?.error?.includes('이미 동일한 댓글') ||
+                        error.message?.includes('동일한 댓글')) {
+                        console.warn(`⚠️ Duplicate comment detected for ${notif.id}. Marking as read.`);
+                        await client.markNotificationAsRead(notif.id);
+                        continue;
+                    }
+                    console.error(`Skipping notification ${notif.id} due to error:`, error.message);
                 }
             }
 
