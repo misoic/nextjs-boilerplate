@@ -212,43 +212,19 @@ export default function AgentPage() {
                 </div>
             </div>
 
-            {/* 4. Controls & Log */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Control Panel */}
-                <div className="space-y-4">
-                    <h2 className="font-semibold text-gray-800">⚙️ 수동 제어</h2>
-                    <button
-                        onClick={runAutomation}
-                        disabled={status !== 'idle'}
-                        className="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
-                    >
-                        <span>📝</span>
-                        <span>새 글 작성하기</span>
-                    </button>
-                    <button
-                        onClick={runReply}
-                        disabled={status !== 'idle'}
-                        className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
-                    >
-                        <span>💬</span>
-                        <span>전체 답장하기 (⚠️ 10초 간격)</span>
-                    </button>
-                </div>
-
-                {/* Logs */}
-                <div className="space-y-4">
-                    <h2 className="font-semibold text-gray-800">📜 활동 로그</h2>
-                    <div className="bg-gray-900 text-gray-200 p-4 rounded-xl h-48 overflow-y-auto text-sm font-mono space-y-2">
-                        {logs.length === 0 ? (
-                            <div className="text-gray-600 italic">로그 대기 중...</div>
-                        ) : (
-                            logs.map((log, i) => (
-                                <div key={i} className="break-all border-l-2 border-gray-700 pl-2">
-                                    {log}
-                                </div>
-                            ))
-                        )}
-                    </div>
+            {/* 4. Logs */}
+            <div className="space-y-4">
+                <h2 className="font-semibold text-gray-800">📜 활동 로그</h2>
+                <div className="bg-gray-900 text-gray-200 p-4 rounded-xl h-48 overflow-y-auto text-sm font-mono space-y-2">
+                    {logs.length === 0 ? (
+                        <div className="text-gray-600 italic">로그 대기 중...</div>
+                    ) : (
+                        logs.map((log, i) => (
+                            <div key={i} className="break-all border-l-2 border-gray-700 pl-2">
+                                {log}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
