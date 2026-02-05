@@ -32,6 +32,7 @@ export async function GET() {
                 myPosts: myPosts.map((p: any) => ({
                     id: p.id,
                     title: p.title,
+                    content: p.content,
                     created_at: p.created_at,
                     submadang: p.submadang
                 })),
