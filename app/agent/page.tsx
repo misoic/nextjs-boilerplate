@@ -16,9 +16,12 @@ interface DashboardData {
         content: string;
         created_at: string;
         submadang: string;
+        author_name: string;
+        upvotes: number;
+        comment_count: number;
     }[];
-    unreadNotificationsCount: number;
-    recentNotifications: any[];
+    // unreadNotificationsCount: number; // Removed
+    // recentNotifications: any[]; // Removed
     globalStats: {
         totalPosts: number;
         totalAgents: number;
@@ -66,50 +69,8 @@ export default function AgentPage() {
         }
     };
 
-    const runReply = async () => {
-        setStatus('replying');
-        try {
-            const res = await axios.post('/api/agent/reply-comments');
-            const count = res.data.repliedCount;
-            setLogs(prev => [`💬 답장 완료: ${count}개`, ...prev]);
-            if (res.data.logs) {
-                setLogs(prev => [...res.data.logs, ...prev]);
-            }
-            await fetchDashboard(); // Refresh stats
-        } catch (error: any) {
-            setLogs(prev => [`❌ 오류: ${error.response?.data?.error || error.message}`, ...prev]);
-        } finally {
-            setStatus('idle');
-        }
-    };
-
-    const runReplySingle = async (notif: any) => {
-        // Optimistic UI: Remove from list immediately to feel fast
-        if (!dashboard) return;
-
-        const originalNotifications = dashboard.recentNotifications;
-        const originalCount = dashboard.unreadNotificationsCount;
-
-        // Temporarily remove
-        setDashboard({
-            ...dashboard,
-            unreadNotificationsCount: Math.max(0, originalCount - 1),
-            recentNotifications: dashboard.recentNotifications.filter(n => n.id !== notif.id)
-        });
-
-        try {
-            await axios.post('/api/agent/reply-single', { notification: notif });
-            setLogs(prev => [`↩️ 단건 답장 완료: ${notif.actor_name}`, ...prev]);
-        } catch (error: any) {
-            // Revert on failure
-            setDashboard({
-                ...dashboard,
-                unreadNotificationsCount: originalCount,
-                recentNotifications: originalNotifications
-            });
-            setLogs(prev => [`❌ 답장 실패: ${error.response?.data?.error || error.message}`, ...prev]);
-        }
-    };
+    // const runReply removed
+    // const runReplySingle removed
 
     if (loading) return <div className="p-8 text-center">🔄 에이전트 상황실 접속 중...</div>;
 
@@ -133,19 +94,8 @@ export default function AgentPage() {
             </header>
 
             {/* 2. Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Notification Card */}
-                <div className={`p-6 rounded-xl border ${dashboard?.unreadNotificationsCount ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}>
-                    <div className="text-gray-500 text-sm font-medium mb-2">읽지 않은 알림</div>
-                    <div className="flex items-baseline space-x-2">
-                        <span className={`text-4xl font-bold ${dashboard?.unreadNotificationsCount ? 'text-red-500' : 'text-gray-700'}`}>
-                            {dashboard?.unreadNotificationsCount || 0}
-                        </span>
-                        <span className="text-gray-400 text-sm">건</span>
-                    </div>
-                </div>
-
-                {/* Community Stats Card - Removed My Posts Count Card */}
+            <div className="grid grid-cols-1 gap-4">
+                {/* Community Stats Card - Removed Notification Card, Expanded Grid used to be 3 cols */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <div className="text-gray-500 text-sm font-medium mb-2">전체 커뮤니티</div>
                     <div className="flex items-baseline space-x-2">
@@ -153,19 +103,35 @@ export default function AgentPage() {
                         <span className="text-gray-400 text-xs">글 / {dashboard?.globalStats.totalAgents || '-'} 봇</span>
                     </div>
                 </div>
+
+                {/* My Posts Count Mini Card - Optional, maybe keep as simple stat or removing as requested?
+                    Wait, user said "Red card remove", "List remove".
+                    Actually, let's keep Community Stats and maybe just make it cleaner.
+                    Let's just keep Community Stats for now as the top bar or remove top bar entirely?
+                    User said "This two screens remove" pointing to Notification Card and List.
+                    Left "Community Stats" remains. Use full width or keep simple.
+                 */}
             </div>
 
-            {/* 3. Main Content Grid (My Posts & Notifications) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* 3. Main Content Grid (My Posts Only - Full Width) */}
+            <div className="grid grid-cols-1 gap-8">
 
-                {/* Left Column: My Posts List */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-[500px] flex flex-col">
+                {/* My Posts List - Full Width Feed */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[500px] flex flex-col">
                     <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h2 className="font-semibold text-gray-800">✍️ 내가 쓴 글 ({dashboard?.myPostsCount || 0})</h2>
+                        <h2 className="font-semibold text-gray-800">✍️ 내 피드 ({dashboard?.myPostsCount || 0})</h2>
+                        <button
+                            onClick={runAutomation}
+                            disabled={status !== 'idle'}
+                            className="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center space-x-2"
+                        >
+                            <span>📝</span>
+                            <span>새 글 작성</span>
+                        </button>
                     </div>
-                    <div className="overflow-y-auto flex-1 p-2">
+                    <div className="overflow-y-auto flex-1 p-4 bg-gray-50">
                         {dashboard?.myPosts && dashboard.myPosts.length > 0 ? (
-                            <ul className="space-y-2">
+                            <ul className="space-y-4 max-w-3xl mx-auto">
                                 {dashboard.myPosts.map((post) => (
                                     <li
                                         key={post.id}
@@ -181,15 +147,15 @@ export default function AgentPage() {
                                                 setSelectedPost((prev: any) => ({ ...prev, content: "⚠️ 본문 내용을 가져올 수 없습니다. (너무 오래된 글이거나 삭제되었음)" }));
                                             }
                                         }}
-                                        className="group bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-4 cursor-pointer transition-all hover:shadow-md flex gap-4 items-start"
+                                        className="group bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex gap-6 items-start"
                                     >
                                         {/* Left: Votes */}
-                                        <div className="flex flex-col items-center min-w-[32px] gap-1 pt-1">
-                                            <svg className="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="flex flex-col items-center min-w-[40px] gap-1 pt-1">
+                                            <svg className="w-8 h-8 text-gray-300 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                                             </svg>
-                                            <span className="text-sm font-bold text-gray-500 group-hover:text-orange-500">{post.upvotes || 0}</span>
-                                            <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <span className="text-lg font-bold text-gray-600 group-hover:text-orange-500">{post.upvotes || 0}</span>
+                                            <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </div>
@@ -197,10 +163,10 @@ export default function AgentPage() {
                                         {/* Right: Content */}
                                         <div className="flex-1 min-w-0">
                                             {/* Meta Row */}
-                                            <div className="flex items-center text-xs text-gray-400 mb-1 space-x-2">
-                                                <span className="font-medium text-gray-500">{post.submadang || 'general'}</span>
+                                            <div className="flex items-center text-sm text-gray-400 mb-2 space-x-2">
+                                                <span className="font-bold text-gray-600 px-2 py-0.5 bg-gray-100 rounded">{post.submadang || 'general'}</span>
                                                 <span>•</span>
-                                                <span>{post.author_name || dashboard?.agent?.name}</span>
+                                                <span className="text-gray-600">{post.author_name || dashboard?.agent?.name}</span>
                                                 <span>•</span>
                                                 <span>{(() => {
                                                     const diff = Date.now() - new Date(post.created_at).getTime();
@@ -213,22 +179,22 @@ export default function AgentPage() {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors line-clamp-1">
                                                 {post.title}
                                             </h3>
 
                                             {/* Preview (Content) */}
-                                            <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">
+                                            <p className="text-base text-gray-600 line-clamp-3 mb-4 leading-relaxed">
                                                 {post.content || "내용 미리보기 없음..."}
                                             </p>
 
                                             {/* Footer Row */}
-                                            <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
-                                                <span className="flex items-center gap-1 hover:bg-gray-100 px-1.5 py-0.5 rounded transition-colors">
-                                                    💬 {post.comment_count || 0} 댓글
+                                            <div className="flex items-center gap-6 text-sm text-gray-500 font-medium border-t border-gray-100 pt-3">
+                                                <span className="flex items-center gap-2 hover:bg-gray-50 px-2 py-1 rounded transition-colors">
+                                                    💬 <span className="text-gray-700">{post.comment_count || 0}</span> 댓글
                                                 </span>
-                                                <span className="flex items-center gap-1 hover:bg-gray-100 px-1.5 py-0.5 rounded transition-colors">
-                                                    🔗 공유
+                                                <span className="flex items-center gap-2 hover:bg-gray-50 px-2 py-1 rounded transition-colors">
+                                                    🔗 공유하기
                                                 </span>
                                             </div>
                                         </div>
@@ -237,55 +203,13 @@ export default function AgentPage() {
                             </ul>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm p-8">
-                                <span className="text-2xl mb-2">📝</span>
-                                <div>작성한 글이 없습니다.</div>
+                                <span className="text-4xl mb-4">✍️</span>
+                                <div className="text-lg">아직 작성한 글이 없습니다.</div>
+                                <div className="text-sm text-gray-400 mt-2">'새 글 작성' 버튼을 눌러보세요!</div>
                             </div>
                         )}
                     </div>
                 </div>
-
-                {/* Right Column: Notifications List */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-[500px] flex flex-col">
-                    <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h2 className="font-semibold text-gray-800">🔔 최신 알림</h2>
-                        {dashboard?.unreadNotificationsCount ? (
-                            <button onClick={runReply} className="text-blue-500 text-sm hover:underline font-medium">
-                                모두 답장하기 →
-                            </button>
-                        ) : null}
-                    </div>
-                    <div className="divide-y divide-gray-50 overflow-y-auto flex-1">
-                        {dashboard?.recentNotifications && dashboard.recentNotifications.length > 0 ? (
-                            dashboard.recentNotifications.map((notif: any) => (
-                                <div key={notif.id} className="px-6 py-4 hover:bg-gray-50 transition-colors flex justify-between items-start group">
-                                    <div>
-                                        <div className="flex items-center space-x-2 mb-1">
-                                            <span className="text-sm font-bold text-gray-900">{notif.actor_name}</span>
-                                            <span className="text-xs text-gray-400">{new Date(notif.created_at).toLocaleTimeString()}</span>
-                                            {notif.type === 'comment_on_post' && <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-bold">댓글</span>}
-                                            {notif.type === 'reply_to_comment' && <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded font-bold">답글</span>}
-                                        </div>
-                                        <p className="text-sm text-gray-600 mt-1 line-clamp-2 leading-relaxed">
-                                            "{notif.content_preview}"
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => runReplySingle(notif)}
-                                        className="ml-4 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors opacity-0 group-hover:opacity-100 whitespace-nowrap"
-                                    >
-                                        답장 ↩️
-                                    </button>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm p-8">
-                                <span className="text-2xl mb-2">🔕</span>
-                                <div>새로운 알림이 없습니다.</div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
             </div>
 
             {/* 4. Controls & Log */}
