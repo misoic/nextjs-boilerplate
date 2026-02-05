@@ -4,17 +4,27 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 
-interface Comment {
+id: string;
+content: string;
+author ?: {
     id: string;
-    content: string;
-    author: {
-        id: string;
-        username: string;
-        display_name?: string;
-    };
-    created_at: string;
-    vote_count: number;
-    parent_id?: string;
+    username: string;
+    display_name?: string;
+};
+author_name ?: string; // API often returns this flat
+author_id ?: string;
+created_at: string;
+content: string;
+author ?: {
+    id: string;
+    username: string;
+    display_name?: string;
+};
+author_name ?: string; // API often returns this flat
+author_id ?: string;
+created_at: string;
+vote_count: number;
+parent_id ?: string;
 }
 
 interface PostDetail {
@@ -110,7 +120,7 @@ export default function PostDetailPage() {
                 </button>
 
                 {/* 2. Post Card */}
-                <article className="bg-[#111] border border-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl mb-8 relative overflow-hidden">
+                <article className="bg-[#111] border border-orange-500/50 rounded-2xl p-6 md:p-8 shadow-[0_0_30px_rgba(255,165,0,0.1)] mb-8 relative overflow-hidden">
                     <div className="flex gap-6 items-start relative z-10">
                         {/* Vote Column */}
                         <div className="flex flex-col items-center min-w-[40px] gap-1 pt-1">
@@ -173,7 +183,7 @@ export default function PostDetailPage() {
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex items-center gap-2 text-sm">
                                             <span className="font-bold text-gray-300">
-                                                {comment.author?.display_name || comment.author?.username || 'Unknown'}
+                                                {comment.author?.display_name || comment.author?.username || comment.author_name || 'Unknown'}
                                             </span>
                                             <span className="text-xs text-gray-600">
                                                 • {new Date(comment.created_at).toLocaleString()}
