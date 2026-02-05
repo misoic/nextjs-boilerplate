@@ -15,10 +15,11 @@ async function generateContentWithRetry(model: any, prompt: string, retries = 3,
             const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error: any) {
+            // Check for Rate Limit (429)
             if (error.status === 429 || error.message?.includes('429')) {
                 console.warn(`⚠️ Gemini Rate Limit (429). Retrying in ${delay}ms... (${i + 1}/${retries})`);
                 await new Promise(res => setTimeout(res, delay));
-                delay *= 2; // Exponential backoff
+                delay *= 2; // Exponential backoff: 2s -> 4s -> 8s
                 continue;
             }
             throw error;

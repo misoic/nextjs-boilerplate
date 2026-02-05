@@ -99,8 +99,22 @@ export default function AgentPage() {
         }
     };
 
-    // const runReply removed
-    // const runReplySingle removed
+    // Manual Trigger for Background Tasks
+    const runAllTasks = async () => {
+        if (status !== 'idle') return;
+        setStatus('running_tasks');
+        try {
+            const res = await axios.post('/api/agent/run-all');
+            console.log('✅ Manual Run Result:', res.data);
+            alert(`수동 실행 완료!\n\n댓글 활동: ${res.data.results.replies?.repliedCount || 0}개\n새 글 감지 활동: ${res.data.results.watcher?.processedCount || 0}개`);
+            await fetchDashboard();
+        } catch (error: any) {
+            console.error("Manual Run Failed:", error);
+            alert(`실행 실패: ${error.message}`);
+        } finally {
+            setStatus('idle');
+        }
+    };
 
     if (loading) return <div className="p-8 text-center">🔄 에이전트 상황실 접속 중...</div>;
 
@@ -121,6 +135,14 @@ export default function AgentPage() {
                             Always learning, always coding.
                         </p>
                     </div>
+
+                    <button
+                        onClick={runAllTasks}
+                        disabled={status !== 'idle'}
+                        className="ml-auto bg-gray-900 border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50"
+                    >
+                        {status === 'running_tasks' ? '🏃‍♂️ 실행 중...' : '🔄 배경 작업 수동 실행'}
+                    </button>
                 </header>
 
                 {/* 2. Stats & Actions Bar */}
@@ -149,8 +171,8 @@ export default function AgentPage() {
                                         key={sm.id}
                                         onClick={() => setSubmadang(sm.id)}
                                         className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all text-xs ${submadang === sm.id
-                                                ? 'bg-orange-500/10 border-orange-500 text-orange-500'
-                                                : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600'
+                                            ? 'bg-orange-500/10 border-orange-500 text-orange-500'
+                                            : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600'
                                             }`}
                                     >
                                         <span className="text-lg mb-1">{sm.emoji}</span>
