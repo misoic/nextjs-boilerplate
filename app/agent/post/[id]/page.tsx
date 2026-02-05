@@ -140,7 +140,7 @@ export default function PostDetailPage() {
                             </h1>
 
                             {/* Content */}
-                            <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">
+                            <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap font-sans break-words break-all">
                                 {post.content}
                             </div>
 

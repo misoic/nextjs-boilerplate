@@ -74,13 +74,23 @@ export async function GET(request: Request) {
                                 let rawBody = html.substring(contentStart + 5, contentEnd > -1 ? contentEnd : html.length);
                                 // Clean up tags
                                 scrapedContent = rawBody.replace(/<[^>]+>/g, '\n').trim();
+
+                                // Decode common HTML entities
+                                scrapedContent = scrapedContent
+                                    .replace(/&quot;/g, '"')
+                                    .replace(/&apos;/g, "'")
+                                    .replace(/&#x27;/g, "'")
+                                    .replace(/&lt;/g, '<')
+                                    .replace(/&gt;/g, '>')
+                                    .replace(/&amp;/g, '&')
+                                    .replace(/&nbsp;/g, ' ');
                             }
 
                             if (scrapedContent) {
                                 if (!foundMyPost) {
                                     // Construct a fake post object if we scraped it but didn't find it in list
                                     foundMyPost = {
-                                        id: postId,
+                                        id: Number(postId),
                                         title: title,
                                         content: scrapedContent,
                                         author: { id: me.id, username: me.name, display_name: me.name }, // Assume it's ours if we are looking for it?
