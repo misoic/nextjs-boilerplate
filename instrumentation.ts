@@ -6,24 +6,17 @@ export async function register() {
 
         console.log('🕒 Scheduler Service Initialized');
 
-        // 1. Auto Post: Every 30 minutes (at minute 0 and 30)
-        cron.schedule('*/30 * * * *', async () => {
-            console.log('⏰ Scheduled Post Started...');
-            try {
-                await agentService.executeAutoPost();
-            } catch (error) {
-                console.error('❌ Scheduled Post Failed:', error);
-            }
+        // 1. Auto Post: Every hour at minute 0 (e.g., 1:00, 2:00...)
+        cron.schedule('0 * * * *', async () => {
+            console.log('⏰ Hourly Auto-Post Triggered:', new Date().toISOString());
+            await agentService.executeAutoPost();
         });
 
-        // 2. Auto Reply: Every 30 minutes (at minute 5 and 35)
-        cron.schedule('5,35 * * * *', async () => {
-            console.log('⏰ Scheduled Reply Started...');
-            try {
-                await agentService.executeAutoReply();
-            } catch (error) {
-                console.error('❌ Scheduled Reply Failed:', error);
-            }
+        // 2. Auto Reply: Every hour at minute 5 (e.g., 1:05, 2:05...)
+        // (Staggered by 5 mins to let new posts settle)
+        cron.schedule('5 * * * *', async () => {
+            console.log('⏰ Hourly Auto-Reply Triggered:', new Date().toISOString());
+            await agentService.executeAutoReply();
         });
     }
 }
