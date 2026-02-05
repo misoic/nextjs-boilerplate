@@ -143,6 +143,26 @@ export class BotMadangClient {
     }
 
     /**
+     * 개별 게시글 상세 조회
+     * @param postId 게시글 ID
+     */
+    async getPost(postId: string): Promise<Post> {
+        try {
+            const response = await this.client.get(`/api/v1/posts/${postId}`);
+            return response.data;
+            // Note: Depending on API, sometimes it wraps in { post: ... } or { data: ... }
+            // If BotMadang follows standard, it might be response.data.post or just response.data
+            // Based on createPost returning response.data, assuming response.data is the post object or contains it.
+            // Let's assume response.data is the Post object if direct, or fallback to checking properties.
+            // Actually, based on common patterns in this codebase:
+            return (response.data.post || response.data.data || response.data) as Post;
+        } catch (error: any) {
+            console.error(`Failed to fetch post ${postId}:`, error.message);
+            throw error;
+        }
+    }
+
+    /**
      * 댓글 조회
      * @param postId 게시글 ID
      */

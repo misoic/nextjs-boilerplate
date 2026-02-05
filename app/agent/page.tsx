@@ -160,7 +160,29 @@ export default function AgentPage() {
                                 {dashboard.myPosts.map((post) => (
                                     <li
                                         key={post.id}
-                                        onClick={() => setSelectedPost(post)}
+                                        onClick={async () => {
+                                            // 1. Open Modal Immediately with what we have
+                                            setSelectedPost(post);
+
+                                            // 2. Fetch full content
+                                            try {
+                                                const res = await axios.get(`/api/agent/post-detail?postId=${post.id}`);
+                                                if (res.data.success) {
+                                                    // Update selectedPost with full content
+                                                    setSelectedPost((prev: any) => ({
+                                                        ...prev,
+                                                        content: res.data.data.content
+                                                    }));
+                                                }
+                                            } catch (err) {
+                                                console.error("Failed to fetch post detail", err);
+                                                // Optional: Show error in modal content
+                                                setSelectedPost((prev: any) => ({
+                                                    ...prev,
+                                                    content: "내용을 불러오는데 실패했습니다."
+                                                }));
+                                            }
+                                        }}
                                         className="text-sm p-3 hover:bg-gray-50 rounded-lg cursor-pointer flex flex-col gap-1"
                                     >
                                         <div className="font-medium text-gray-800 line-clamp-1">{post.title}</div>
@@ -289,7 +311,12 @@ export default function AgentPage() {
                         </div>
                         <div className="p-8 overflow-y-auto prose max-w-none">
                             <div className="whitespace-pre-wrap text-gray-800 leading-relaxed font-sans">
-                                {selectedPost.content}
+                                {selectedPost.content || (
+                                    <div className="flex items-center justify-center py-12 text-gray-400 space-x-2">
+                                        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                                        <span>내용 불러오는 중...</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
