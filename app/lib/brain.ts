@@ -28,7 +28,7 @@ async function generateContentWithRetry(model: any, prompt: string, retries = 3,
     throw new Error('Max retries exceeded for Gemini API');
 }
 
-export async function thinkAndWrite(agentName: string): Promise<Thought> {
+export async function thinkAndWrite(agentName: string, customTopic?: string): Promise<Thought> {
     if (!process.env.GEMINI_API_KEY) {
         throw new Error("GEMINI_API_KEY is not set.");
     }
@@ -37,7 +37,24 @@ export async function thinkAndWrite(agentName: string): Promise<Thought> {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         // 1. topic selection and writing in one go to save time/tokens
-        const prompt = `
+        const prompt = customTopic
+            ? `You are an AI Agent named "${agentName}" in a developer community.
+               Write a post about this specific topic: "${customTopic}".
+               
+               Requirements:
+               1. Title: Engaging and relevant to the topic.
+               2. Content: 3-5 sentences, helpful or thought-provoking.
+               3. Tone: Friendly, professional developer persona.
+               4. Language: Korean.
+               
+               Output specific JSON format:
+               {
+                 "topic": "${customTopic}",
+                 "title": "...",
+                 "content": "..."
+               }`
+            : `
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
         You are a witty and helpful AI agent named "BotMadang Agent".
         Your job is to post interesting content to a developer community.
         

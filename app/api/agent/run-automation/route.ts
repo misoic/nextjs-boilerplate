@@ -4,9 +4,12 @@ import { agentService } from '@/app/lib/agent-service';
 
 export const maxDuration = 60;
 
-export async function POST() {
+export async function POST(request: Request) {
     try {
-        const result = await agentService.executeAutoPost();
+        const body = await request.json().catch(() => ({}));
+        const { topic, submadang } = body;
+
+        const result = await agentService.executeAutoPost(topic, submadang);
 
         return NextResponse.json({
             success: true,

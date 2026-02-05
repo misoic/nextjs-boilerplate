@@ -32,8 +32,22 @@ interface DashboardData {
 export default function AgentPage() {
     const router = useRouter();
     const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+
     const [status, setStatus] = useState<string>('idle');
     const [loading, setLoading] = useState(true);
+
+    // New Feature State
+    const [topic, setTopic] = useState('');
+    const [submadang, setSubmadang] = useState('general');
+    const [cooldown, setCooldown] = useState(0);
+
+    const SUBMADANGS = [
+        { id: 'general', name: 'General', emoji: '🌱' },
+        { id: 'tech', name: 'Tech', emoji: '💻' },
+        { id: 'daily', name: 'Daily', emoji: '☕' },
+        { id: 'questions', name: 'Q&A', emoji: '❓' },
+        { id: 'showcase', name: 'Showcase', emoji: '✨' },
+    ];
 
     const [selectedPost, setSelectedPost] = useState<any>(null);
 
@@ -57,12 +71,26 @@ export default function AgentPage() {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setInterval(() => setCooldown(c => c - 1), 1000);
+            return () => clearInterval(timer);
+        }
+    }, [cooldown]);
+
     const runAutomation = async () => {
+        if (cooldown > 0) return;
+
         setStatus('posting');
         try {
-            const res = await axios.post('/api/agent/run-automation');
+            const res = await axios.post('/api/agent/run-automation', {
+                topic: topic || undefined,
+                submadang
+            });
             console.log(`📝 글 작성 성공: ${res.data.topic}`);
-            await fetchDashboard(); // Refresh stats
+            setTopic(''); // Reset topic
+            setCooldown(180); // 3 minutes cooldown
+            await fetchDashboard();
         } catch (error: any) {
             console.error(`❌ 오류: ${error.response?.data?.error || error.message}`);
             alert(`오류가 발생했습니다: ${error.response?.data?.error || error.message}`);
@@ -109,19 +137,52 @@ export default function AgentPage() {
                         </div>
                     </div>
 
-                    {/* Action Card */}
-                    <div className="bg-[#111] p-6 rounded-xl border border-gray-800 shadow-sm flex items-center justify-between">
-                        <div>
-                            <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">My Status</div>
-                            <div className="text-lg font-bold text-gray-300">{status === 'idle' ? '🟢 Online' : '🟠 Busy...'}</div>
+                    {/* Action Card -> Creation Hub */}
+                    <div className="bg-[#111] p-6 rounded-xl border border-gray-800 shadow-sm col-span-1 md:col-span-2 lg:col-span-1">
+                        <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-4">Create New Post</div>
+
+                        <div className="space-y-4">
+                            {/* 1. Submadang Selector */}
+                            <div className="grid grid-cols-5 gap-2">
+                                {SUBMADANGS.map((sm) => (
+                                    <button
+                                        key={sm.id}
+                                        onClick={() => setSubmadang(sm.id)}
+                                        className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all text-xs ${submadang === sm.id
+                                                ? 'bg-orange-500/10 border-orange-500 text-orange-500'
+                                                : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600'
+                                            }`}
+                                    >
+                                        <span className="text-lg mb-1">{sm.emoji}</span>
+                                        <span>{sm.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* 2. Topic Input */}
+                            <input
+                                type="text"
+                                placeholder="어떤 주제로 글을 쓸까요? (비워두면 AI가 생각함)"
+                                value={topic}
+                                onChange={(e) => setTopic(e.target.value)}
+                                className="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-orange-500 transition-colors"
+                            />
+
+                            {/* 3. Action Button */}
+                            <button
+                                onClick={runAutomation}
+                                disabled={status !== 'idle' || cooldown > 0}
+                                className="w-full bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg transition-all font-medium flex items-center justify-center gap-2"
+                            >
+                                {cooldown > 0 ? (
+                                    <span className="text-orange-500 font-mono">⏳ {Math.floor(cooldown / 60)}:{(cooldown % 60).toString().padStart(2, '0')} 남음</span>
+                                ) : (
+                                    <>
+                                        <span>✍️</span> {topic ? '이 주제로 글쓰기' : 'AI 자동 글쓰기'}
+                                    </>
+                                )}
+                            </button>
                         </div>
-                        <button
-                            onClick={runAutomation}
-                            disabled={status !== 'idle'}
-                            className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all font-medium flex items-center gap-2"
-                        >
-                            <span>✍️</span> Write Post
-                        </button>
                     </div>
                 </div>
 

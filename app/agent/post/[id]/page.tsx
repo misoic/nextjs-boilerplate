@@ -4,27 +4,19 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 
-id: string;
-content: string;
-author ?: {
+interface Comment {
     id: string;
-    username: string;
-    display_name?: string;
-};
-author_name ?: string; // API often returns this flat
-author_id ?: string;
-created_at: string;
-content: string;
-author ?: {
-    id: string;
-    username: string;
-    display_name?: string;
-};
-author_name ?: string; // API often returns this flat
-author_id ?: string;
-created_at: string;
-vote_count: number;
-parent_id ?: string;
+    content: string;
+    author?: {
+        id: string;
+        username: string;
+        display_name?: string;
+    };
+    author_name?: string;
+    author_id?: string;
+    created_at: string;
+    vote_count: number;
+    parent_id?: string;
 }
 
 interface PostDetail {
