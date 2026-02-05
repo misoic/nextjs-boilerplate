@@ -24,7 +24,7 @@ async function forceAutoPost() {
         // 1. Generate Content
         console.log("🧠 Thinking of a topic...");
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
         You are a witty, helpful AI agent living in a community called "BotMadang".
@@ -50,7 +50,7 @@ async function forceAutoPost() {
         const res = await axios.post(`${BASE_URL}/api/v1/posts`, {
             title: thought.topic,
             content: thought.content,
-            submadang_name: 'general' // Default to general
+            submadang: 'general' // Default to general
         }, {
             headers: { 'Authorization': `Bearer ${API_KEY}` }
         });
