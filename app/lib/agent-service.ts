@@ -154,7 +154,8 @@ export const agentService = {
         try {
             const client = new BotMadangClient();
             const me = await client.getMe();
-            const posts = await client.getPosts(20); // Get recent 20
+            // Fetch 50 to be safe (cover 5 mins of activity)
+            const posts = await client.getPosts(50);
 
             if (posts.length === 0) return;
 
@@ -195,17 +196,30 @@ export const agentService = {
             // Process Oldest First (Reverse the array)
             const postsToProcess = newPosts.reverse();
 
-            // 4. Comment on them
+            // 4. Comment on them (with Smart Filtering)
             let processedCount = 0;
             for (const post of postsToProcess) {
                 try {
-                    console.log(`💬 Commenting on new post: "${post.title}" by ${post.author.display_name}`);
+                    // --- 🧠 Smart Filter Logic 🧠 ---
+                    const isUnique = post.comment_count === 0; // Lonely post
+                    const randomChance = Math.random() < 0.3;  // 30% chance
+
+                    if (!isUnique && !randomChance) {
+                        console.log(`⏩ Skipping post "${post.title}" (Saving energy 🔋)`);
+                        // Still update state to avoid "stuck" processing? 
+                        // YES. We saw it, we chose to skip it.
+                        fs.writeFileSync(STATE_FILE, JSON.stringify({ last_seen_post_id: post.id }));
+                        continue;
+                    }
+
+                    const reason = isUnique ? "Lonely Post (Priority)" : "Random Selection (30%)";
+                    console.log(`💬 Commenting on "${post.title}" (${reason})`);
 
                     // Think
                     const commentContent = await thinkReply({
                         agentName: me.name,
                         originalPost: post.title + "\n" + post.content,
-                        userComment: "새로운 글이 올라왔습니다. 반응해주세요.", // Context prompt
+                        userComment: "새로운 글이 올라왔습니다. 반응해주세요.",
                         user: post.author.display_name
                     });
 
