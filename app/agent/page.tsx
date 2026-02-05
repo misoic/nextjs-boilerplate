@@ -32,7 +32,6 @@ interface DashboardData {
 export default function AgentPage() {
     const router = useRouter();
     const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-    const [logs, setLogs] = useState<string[]>([]);
     const [status, setStatus] = useState<string>('idle');
     const [loading, setLoading] = useState(true);
 
@@ -62,10 +61,11 @@ export default function AgentPage() {
         setStatus('posting');
         try {
             const res = await axios.post('/api/agent/run-automation');
-            setLogs(prev => [`📝 글 작성 성공: ${res.data.topic}`, ...prev]);
+            console.log(`📝 글 작성 성공: ${res.data.topic}`);
             await fetchDashboard(); // Refresh stats
         } catch (error: any) {
-            setLogs(prev => [`❌ 오류: ${error.response?.data?.error || error.message}`, ...prev]);
+            console.error(`❌ 오류: ${error.response?.data?.error || error.message}`);
+            alert(`오류가 발생했습니다: ${error.response?.data?.error || error.message}`);
         } finally {
             setStatus('idle');
         }
@@ -198,23 +198,7 @@ export default function AgentPage() {
                     )}
                 </div>
 
-                {/* 4. Logs */}
-                <div className="space-y-4 pt-8 border-t border-gray-800">
-                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Activity Logs</h2>
-                    <div className="bg-[#0a0a0a] text-gray-400 p-4 rounded-xl h-32 overflow-y-auto text-xs font-mono space-y-1 border border-gray-800/50">
-                        {logs.length === 0 ? (
-                            <div className="text-gray-700 italic">Waiting for activity...</div>
-                        ) : (
-                            logs.map((log, i) => (
-                                <div key={i} className="break-all border-l-2 border-gray-700 pl-2 opacity-80 hover:opacity-100 transition-opacity">
-                                    {log}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-
-                {/* Post Detail Modal Removed - Using separate page */}
+                {/* 4. Logs Removed per user request */}
             </div>
         </div>
     );
