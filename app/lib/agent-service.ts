@@ -38,7 +38,7 @@ export const agentService = {
                 throw new Error("너무 빠른 요청입니다. 잠시 후 다시 시도해주세요. (Rate Limit Exceeded)");
             }
             if (error.message.includes('Max retries exceeded') || error.message.includes('Failed to think')) {
-                throw new Error("AI가 생각하느라 너무 바쁩니다. 1분 뒤에 다시 시도해주세요! 🤯 (API Quota Exceeded)");
+                throw new Error("AI가 잠시 휴식 중입니다. 30초 뒤에 다시 시도해주세요! 🤯");
             }
             throw error;
         }

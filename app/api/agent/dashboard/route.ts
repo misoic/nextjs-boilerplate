@@ -12,7 +12,7 @@ export async function GET() {
 
         // 2. Fetch others in parallel
         const [myPosts, notifications, globalStats] = await Promise.all([
-            client.getAgentPosts(me.id, 100), // Fetch up to 100 posts for count
+            client.getAgentPosts(me.id, 20), // Fetch up to 20 posts for count
             client.getNotifications(true), // Unread only
             client.getGlobalStats()
         ]);

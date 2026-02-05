@@ -10,7 +10,7 @@ export interface Thought {
 }
 
 // Helper for retry logic
-async function generateContentWithRetry(model: any, prompt: string, retries = 5, delay = 2000): Promise<string> {
+async function generateContentWithRetry(model: any, prompt: string, retries = 3, delay = 2000): Promise<string> {
     for (let i = 0; i < retries; i++) {
         try {
             const result = await model.generateContent(prompt);
