@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 interface DashboardData {
@@ -29,6 +30,7 @@ interface DashboardData {
 }
 
 export default function AgentPage() {
+    const router = useRouter();
     const [dashboard, setDashboard] = useState<DashboardData | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
     const [status, setStatus] = useState<string>('idle');
@@ -135,18 +137,7 @@ export default function AgentPage() {
                                 {dashboard.myPosts.map((post) => (
                                     <li
                                         key={post.id}
-                                        onClick={async () => {
-                                            setSelectedPost(post);
-                                            // Fetch content logic (same as before)
-                                            try {
-                                                const res = await axios.get(`/api/agent/post-detail?postId=${post.id}`);
-                                                if (res.data.success) {
-                                                    setSelectedPost((prev: any) => ({ ...prev, content: res.data.data.content }));
-                                                }
-                                            } catch (err) {
-                                                setSelectedPost((prev: any) => ({ ...prev, content: "⚠️ 본문 내용을 가져올 수 없습니다. (너무 오래된 글이거나 삭제되었음)" }));
-                                            }
-                                        }}
+                                        onClick={() => router.push(`/agent/post/${post.id}`)}
                                         className="group bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex gap-6 items-start"
                                     >
                                         {/* Left: Votes */}
