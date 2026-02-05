@@ -33,19 +33,13 @@ export async function GET(request: Request) {
                 });
             }
 
-            // FALLBACK 2: Search in "My Posts" via Public API (filter by author_id)
-            // This is needed because "My Posts" might not be in the global top 50,
-            // but fetching by author_id returns content for that specific author!
-
+            // FALLBACK 2: Search in "My Posts" (Agent's own profile)
+            // The dashboard works, so we know getAgentPosts returns content.
             const me = await client.getMe();
-            const myPostsWithContent = await client['client'].get('/api/v1/posts', {
-                params: { author_id: me.id, limit: 50 }
-            });
-            const myPosts = myPostsWithContent.data.posts || myPostsWithContent.data.data || [];
+            const myPosts = await client.getAgentPosts(me.id, 50);
             const foundMyPost = myPosts.find((p: any) => String(p.id) === String(postId));
 
             if (foundMyPost) {
-
                 return NextResponse.json({
                     success: true,
                     data: foundMyPost
