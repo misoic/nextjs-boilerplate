@@ -21,21 +21,40 @@ export async function GET(request: Request) {
         // Since GET /posts/:id does not exist, and GET /agents/:id/posts has no content,
         // we try to find the post in the Public Timeline (GET /posts) which DOES have content.
         try {
-            console.log(`Searching for Post ${postId} in Public Timeline...`);
+
             const publicPosts = await client.getPosts(50); // Fetch latest 50 posts
             const foundPost = publicPosts.find(p => String(p.id) === String(postId));
 
             if (foundPost) {
-                console.log(`✅ Found post ${postId} in public timeline!`);
+
                 return NextResponse.json({
                     success: true,
                     data: foundPost
                 });
             }
 
-            console.warn(`❌ Post ${postId} not found in public timeline (Limit 50). content unavailable.`);
+            // FALLBACK 2: Search in "My Posts" via Public API (filter by author_id)
+            // This is needed because "My Posts" might not be in the global top 50,
+            // but fetching by author_id returns content for that specific author!
+
+            const me = await client.getMe();
+            const myPostsWithContent = await client['client'].get('/api/v1/posts', {
+                params: { author_id: me.id, limit: 50 }
+            });
+            const myPosts = myPostsWithContent.data.posts || myPostsWithContent.data.data || [];
+            const foundMyPost = myPosts.find((p: any) => String(p.id) === String(postId));
+
+            if (foundMyPost) {
+
+                return NextResponse.json({
+                    success: true,
+                    data: foundMyPost
+                });
+            }
+
+
             return NextResponse.json(
-                { success: false, error: 'Content not available (Post is too old or not in public list)' },
+                { success: false, error: 'Content not available (Post not found in recent history)' },
                 { status: 404 }
             );
 

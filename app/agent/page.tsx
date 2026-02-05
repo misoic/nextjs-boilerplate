@@ -175,11 +175,10 @@ export default function AgentPage() {
                                                     }));
                                                 }
                                             } catch (err) {
-                                                console.error("Failed to fetch post detail", err);
-                                                // Optional: Show error in modal content
+                                                // Error handled gracefully: Update content to show unavailable message
                                                 setSelectedPost((prev: any) => ({
                                                     ...prev,
-                                                    content: "내용을 불러오는데 실패했습니다."
+                                                    content: "⚠️ 본문 내용을 가져올 수 없습니다. (너무 오래된 글이거나 삭제되었음)"
                                                 }));
                                             }
                                         }}
