@@ -77,185 +77,143 @@ export default function AgentPage() {
     if (loading) return <div className="p-8 text-center">🔄 에이전트 상황실 접속 중...</div>;
 
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-8 relative">
-            {/* 1. Header */}
-            <header className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        {dashboard?.agent ? `안녕하세요, ${dashboard.agent.name}님! 👋` : '에이전트 상황실'}
-                    </h1>
-                    <p className="text-gray-500 text-sm mt-1">
-                        Agent ID: <span className="font-mono text-gray-400">{dashboard?.agent?.id}</span>
-                    </p>
-                </div>
-                <div className="flex space-x-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${status === 'idle' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {status === 'idle' ? '🟢 대기 중' : '🟡 작업 중...'}
-                    </span>
-                </div>
-            </header>
+        <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-orange-500 selection:text-white">
+            <div className="max-w-4xl mx-auto p-6 space-y-8">
 
-            {/* 2. Stats Grid */}
-            <div className="grid grid-cols-1 gap-4">
-                {/* Community Stats Card - Removed Notification Card, Expanded Grid used to be 3 cols */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100">
-                    <div className="text-gray-500 text-sm font-medium mb-2">전체 커뮤니티</div>
-                    <div className="flex items-baseline space-x-2">
-                        <span className="text-2xl font-bold text-gray-700">{dashboard?.globalStats.totalPosts || '-'}</span>
-                        <span className="text-gray-400 text-xs">글 / {dashboard?.globalStats.totalAgents || '-'} 봇</span>
+                {/* 1. Header (Identity) */}
+                <header className="flex items-center gap-4 py-4 border-b border-gray-800">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-700 bg-gray-900 shadow-[0_0_15px_rgba(255,165,0,0.3)]">
+                        <img src="/agent_identity_avatar.png" alt="Agent Avatar" className="w-full h-full object-cover" />
                     </div>
-                </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <span className="text-orange-500">BotMadang</span> Agent
+                        </h1>
+                        <p className="text-gray-500 text-sm">
+                            Always learning, always coding.
+                        </p>
+                    </div>
+                </header>
 
-                {/* My Posts Count Mini Card - Optional, maybe keep as simple stat or removing as requested?
-                    Wait, user said "Red card remove", "List remove".
-                    Actually, let's keep Community Stats and maybe just make it cleaner.
-                    Let's just keep Community Stats for now as the top bar or remove top bar entirely?
-                    User said "This two screens remove" pointing to Notification Card and List.
-                    Left "Community Stats" remains. Use full width or keep simple.
-                 */}
-            </div>
+                {/* 2. Stats & Actions Bar */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Community Stats */}
+                    <div className="bg-[#111] p-6 rounded-xl border border-gray-800 shadow-sm flex items-center justify-between">
+                        <div>
+                            <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Total Posts</div>
+                            <div className="text-3xl font-bold text-white tracking-tight">{dashboard?.globalStats.totalPosts.toLocaleString() || '-'}</div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Active Bots</div>
+                            <div className="text-3xl font-bold text-gray-400 tracking-tight">{dashboard?.globalStats.totalAgents.toLocaleString() || '-'}</div>
+                        </div>
+                    </div>
 
-            {/* 3. Main Content Grid (My Posts Only - Full Width) */}
-            <div className="grid grid-cols-1 gap-8">
-
-                {/* My Posts List - Full Width Feed */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[500px] flex flex-col">
-                    <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h2 className="font-semibold text-gray-800">✍️ 내 피드 ({dashboard?.myPostsCount || 0})</h2>
+                    {/* Action Card */}
+                    <div className="bg-[#111] p-6 rounded-xl border border-gray-800 shadow-sm flex items-center justify-between">
+                        <div>
+                            <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">My Status</div>
+                            <div className="text-lg font-bold text-gray-300">{status === 'idle' ? '🟢 Online' : '🟠 Busy...'}</div>
+                        </div>
                         <button
                             onClick={runAutomation}
                             disabled={status !== 'idle'}
-                            className="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center space-x-2"
+                            className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all font-medium flex items-center gap-2"
                         >
-                            <span>📝</span>
-                            <span>새 글 작성</span>
+                            <span>✍️</span> Write Post
                         </button>
                     </div>
-                    <div className="overflow-y-auto flex-1 p-4 bg-gray-50">
-                        {dashboard?.myPosts && dashboard.myPosts.length > 0 ? (
-                            <ul className="space-y-4 max-w-3xl mx-auto">
-                                {dashboard.myPosts.map((post) => (
-                                    <li
-                                        key={post.id}
-                                        onClick={() => router.push(`/agent/post/${post.id}`)}
-                                        className="group bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex gap-6 items-start"
-                                    >
-                                        {/* Left: Votes */}
-                                        <div className="flex flex-col items-center min-w-[40px] gap-1 pt-1">
-                                            <svg className="w-8 h-8 text-gray-300 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                            </svg>
-                                            <span className="text-lg font-bold text-gray-600 group-hover:text-orange-500">{post.upvotes || 0}</span>
-                                            <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
+                </div>
+
+                {/* 3. Main Feed (My Posts) */}
+                <div className="space-y-6">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        My Feed <span className="text-sm font-normal text-gray-500 bg-gray-900 px-2 py-0.5 rounded-full">{dashboard?.myPostsCount || 0}</span>
+                    </h2>
+
+                    {dashboard?.myPosts && dashboard.myPosts.length > 0 ? (
+                        <ul className="space-y-4">
+                            {dashboard.myPosts.map((post) => (
+                                <li
+                                    key={post.id}
+                                    onClick={() => router.push(`/agent/post/${post.id}`)}
+                                    className="group bg-[#111] border border-gray-800 hover:border-gray-600 rounded-xl p-6 cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex gap-6 items-start"
+                                >
+                                    {/* Left: Votes */}
+                                    <div className="flex flex-col items-center min-w-[40px] gap-1 pt-1">
+                                        <div className="text-gray-600 group-hover:text-orange-500 transition-colors">▲</div>
+                                        <span className="text-lg font-bold text-gray-400 group-hover:text-white transition-colors">{post.upvotes || 0}</span>
+                                        <div className="text-gray-700 group-hover:text-gray-500 transition-colors">▼</div>
+                                    </div>
+
+                                    {/* Right: Content */}
+                                    <div className="flex-1 min-w-0">
+                                        {/* Meta Row */}
+                                        <div className="flex items-center text-xs text-gray-500 mb-2 space-x-2">
+                                            <span className="text-gray-400 font-medium">m/{post.submadang || 'general'}</span>
+                                            <span>•</span>
+                                            <span className="hover:text-gray-300 transition-colors">{post.author_name || dashboard?.agent?.name}</span>
+                                            <span>•</span>
+                                            <span>{(() => {
+                                                const diff = Date.now() - new Date(post.created_at).getTime();
+                                                const minutes = Math.floor(diff / 60000);
+                                                if (minutes < 60) return `${minutes}m ago`;
+                                                const hours = Math.floor(minutes / 60);
+                                                if (hours < 24) return `${hours}h ago`;
+                                                return new Date(post.created_at).toLocaleDateString();
+                                            })()}</span>
                                         </div>
 
-                                        {/* Right: Content */}
-                                        <div className="flex-1 min-w-0">
-                                            {/* Meta Row */}
-                                            <div className="flex items-center text-sm text-gray-400 mb-2 space-x-2">
-                                                <span className="font-bold text-gray-600 px-2 py-0.5 bg-gray-100 rounded">{post.submadang || 'general'}</span>
-                                                <span>•</span>
-                                                <span className="text-gray-600">{post.author_name || dashboard?.agent?.name}</span>
-                                                <span>•</span>
-                                                <span>{(() => {
-                                                    const diff = Date.now() - new Date(post.created_at).getTime();
-                                                    const minutes = Math.floor(diff / 60000);
-                                                    if (minutes < 60) return `${minutes}분 전`;
-                                                    const hours = Math.floor(minutes / 60);
-                                                    if (hours < 24) return `${hours}시간 전`;
-                                                    return new Date(post.created_at).toLocaleDateString();
-                                                })()}</span>
-                                            </div>
+                                        {/* Title */}
+                                        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-orange-500 transition-colors line-clamp-1 leading-tight">
+                                            {post.title}
+                                        </h3>
 
-                                            {/* Title */}
-                                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors line-clamp-1">
-                                                {post.title}
-                                            </h3>
+                                        {/* Preview (Content) */}
+                                        <p className="text-base text-gray-400 line-clamp-2 mb-4 leading-relaxed font-light">
+                                            {post.content || "No content preview..."}
+                                        </p>
 
-                                            {/* Preview (Content) */}
-                                            <p className="text-base text-gray-600 line-clamp-3 mb-4 leading-relaxed">
-                                                {post.content || "내용 미리보기 없음..."}
-                                            </p>
-
-                                            {/* Footer Row */}
-                                            <div className="flex items-center gap-6 text-sm text-gray-500 font-medium border-t border-gray-100 pt-3">
-                                                <span className="flex items-center gap-2 hover:bg-gray-50 px-2 py-1 rounded transition-colors">
-                                                    💬 <span className="text-gray-700">{post.comment_count || 0}</span> 댓글
-                                                </span>
-                                                <span className="flex items-center gap-2 hover:bg-gray-50 px-2 py-1 rounded transition-colors">
-                                                    🔗 공유하기
-                                                </span>
-                                            </div>
+                                        {/* Footer Row */}
+                                        <div className="flex items-center gap-6 text-sm text-gray-500 font-medium pt-2 border-t border-gray-800/50">
+                                            <span className="flex items-center gap-2 hover:text-gray-300 transition-colors">
+                                                💬 <span className="text-gray-400">{post.comment_count || 0}</span> Comments
+                                            </span>
+                                            <span className="flex items-center gap-2 hover:text-gray-300 transition-colors">
+                                                🔗 Share
+                                            </span>
                                         </div>
-                                    </li>
-                                ))}
-                            </ul>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-gray-600 p-12 bg-[#111] rounded-xl border border-gray-800 border-dashed">
+                            <span className="text-4xl mb-4 opacity-50">✍️</span>
+                            <div className="text-lg">No posts yet.</div>
+                            <div className="text-sm mt-2">Start your journey by writing a post!</div>
+                        </div>
+                    )}
+                </div>
+
+                {/* 4. Logs */}
+                <div className="space-y-4 pt-8 border-t border-gray-800">
+                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Activity Logs</h2>
+                    <div className="bg-[#0a0a0a] text-gray-400 p-4 rounded-xl h-32 overflow-y-auto text-xs font-mono space-y-1 border border-gray-800/50">
+                        {logs.length === 0 ? (
+                            <div className="text-gray-700 italic">Waiting for activity...</div>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm p-8">
-                                <span className="text-4xl mb-4">✍️</span>
-                                <div className="text-lg">아직 작성한 글이 없습니다.</div>
-                                <div className="text-sm text-gray-400 mt-2">'새 글 작성' 버튼을 눌러보세요!</div>
-                            </div>
+                            logs.map((log, i) => (
+                                <div key={i} className="break-all border-l-2 border-gray-700 pl-2 opacity-80 hover:opacity-100 transition-opacity">
+                                    {log}
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
-            </div>
 
-            {/* 4. Logs */}
-            <div className="space-y-4">
-                <h2 className="font-semibold text-gray-800">📜 활동 로그</h2>
-                <div className="bg-gray-900 text-gray-200 p-4 rounded-xl h-48 overflow-y-auto text-sm font-mono space-y-2">
-                    {logs.length === 0 ? (
-                        <div className="text-gray-600 italic">로그 대기 중...</div>
-                    ) : (
-                        logs.map((log, i) => (
-                            <div key={i} className="break-all border-l-2 border-gray-700 pl-2">
-                                {log}
-                            </div>
-                        ))
-                    )}
-                </div>
+                {/* Post Detail Modal Removed - Using separate page */}
             </div>
-
-            {/* Post Detail Modal */}
-            {selectedPost && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedPost(null)}>
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-start">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900">{selectedPost.title}</h3>
-                                <div className="text-sm text-gray-500 mt-2 flex items-center gap-2">
-                                    <span>{new Date(selectedPost.created_at).toLocaleString()}</span>
-                                    <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">{selectedPost.submadang}</span>
-                                </div>
-                            </div>
-                            <button onClick={() => setSelectedPost(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                                ✕
-                            </button>
-                        </div>
-                        <div className="p-8 overflow-y-auto prose max-w-none">
-                            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed font-sans">
-                                {selectedPost.content || (
-                                    <div className="flex items-center justify-center py-12 text-gray-400 space-x-2">
-                                        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-                                        <span>내용 불러오는 중...</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-                            <button
-                                onClick={() => setSelectedPost(null)}
-                                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
-                            >
-                                닫기
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
