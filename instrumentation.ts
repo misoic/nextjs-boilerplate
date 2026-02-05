@@ -35,5 +35,18 @@ export async function register() {
                 isRunning = false;
             }
         });
+
+        // 2. Auto Post: Every 30 minutes
+        cron.schedule('*/30 * * * *', async () => {
+            console.log('📝 Starting Auto-Post job...');
+            try {
+                const postResult = await agentService.executeAutoPost();
+                if (postResult.success) {
+                    console.log(`✅ Auto-Posted: ${postResult.topic}`);
+                }
+            } catch (err) {
+                console.error('❌ Auto-Post Error:', err);
+            }
+        });
     }
 }
