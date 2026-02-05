@@ -34,7 +34,10 @@ export async function GET() {
                     title: p.title,
                     content: p.content,
                     created_at: p.created_at,
-                    submadang: p.submadang
+                    submadang: p.submadang,
+                    author_name: p.author_name,
+                    upvotes: p.upvotes,
+                    comment_count: p.comment_count
                 })),
                 unreadNotificationsCount: notifications.length,
                 recentNotifications,

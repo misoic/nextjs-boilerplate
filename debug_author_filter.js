@@ -22,10 +22,8 @@ async function main() {
 
         if (posts.length > 0) {
             const p = posts[0];
-            console.log("Sample Post ID:", p.id);
-            console.log("Title:", p.title);
-            console.log("Has Content?", 'content' in p);
-            console.log("Content Preview:", p.content ? p.content.substring(0, 50) : "NULL");
+            console.log("Full Post Object Keys:", Object.keys(p));
+            console.log("Sample Post Data:", JSON.stringify(p, null, 2));
         } else {
             console.log("No posts found for this author via public endpoint.");
         }

@@ -170,38 +170,67 @@ export default function AgentPage() {
                                     <li
                                         key={post.id}
                                         onClick={async () => {
-                                            // 1. Open Modal Immediately with what we have
                                             setSelectedPost(post);
-
-                                            // 2. Fetch full content
+                                            // Fetch content logic (same as before)
                                             try {
                                                 const res = await axios.get(`/api/agent/post-detail?postId=${post.id}`);
                                                 if (res.data.success) {
-                                                    // Update selectedPost with full content
-                                                    setSelectedPost((prev: any) => ({
-                                                        ...prev,
-                                                        content: res.data.data.content
-                                                    }));
+                                                    setSelectedPost((prev: any) => ({ ...prev, content: res.data.data.content }));
                                                 }
                                             } catch (err) {
-                                                // Error handled gracefully
-                                                setSelectedPost((prev: any) => ({
-                                                    ...prev,
-                                                    content: "⚠️ 본문 내용을 가져올 수 없습니다. (너무 오래된 글이거나 삭제되었음)"
-                                                }));
+                                                setSelectedPost((prev: any) => ({ ...prev, content: "⚠️ 본문 내용을 가져올 수 없습니다. (너무 오래된 글이거나 삭제되었음)" }));
                                             }
                                         }}
-                                        className="text-sm p-4 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded-xl cursor-pointer flex flex-col gap-2 transition-all bg-white shadow-sm"
+                                        className="group bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-4 cursor-pointer transition-all hover:shadow-md flex gap-4 items-start"
                                     >
-                                        <div className="font-medium text-gray-800 line-clamp-1 text-base">{post.title}</div>
-                                        <div className="text-xs text-gray-500 flex justify-between items-center">
-                                            <span className="flex items-center gap-2">
-                                                <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                                                <span className="text-gray-400">
-                                                    {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {/* Left: Votes */}
+                                        <div className="flex flex-col items-center min-w-[32px] gap-1 pt-1">
+                                            <svg className="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                            </svg>
+                                            <span className="text-sm font-bold text-gray-500 group-hover:text-orange-500">{post.upvotes || 0}</span>
+                                            <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+
+                                        {/* Right: Content */}
+                                        <div className="flex-1 min-w-0">
+                                            {/* Meta Row */}
+                                            <div className="flex items-center text-xs text-gray-400 mb-1 space-x-2">
+                                                <span className="font-medium text-gray-500">{post.submadang || 'general'}</span>
+                                                <span>•</span>
+                                                <span>{post.author_name || dashboard?.agent?.name}</span>
+                                                <span>•</span>
+                                                <span>{(() => {
+                                                    const diff = Date.now() - new Date(post.created_at).getTime();
+                                                    const minutes = Math.floor(diff / 60000);
+                                                    if (minutes < 60) return `${minutes}분 전`;
+                                                    const hours = Math.floor(minutes / 60);
+                                                    if (hours < 24) return `${hours}시간 전`;
+                                                    return new Date(post.created_at).toLocaleDateString();
+                                                })()}</span>
+                                            </div>
+
+                                            {/* Title */}
+                                            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                                {post.title}
+                                            </h3>
+
+                                            {/* Preview (Content) */}
+                                            <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">
+                                                {post.content || "내용 미리보기 없음..."}
+                                            </p>
+
+                                            {/* Footer Row */}
+                                            <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
+                                                <span className="flex items-center gap-1 hover:bg-gray-100 px-1.5 py-0.5 rounded transition-colors">
+                                                    💬 {post.comment_count || 0} 댓글
                                                 </span>
-                                            </span>
-                                            <span className="bg-gray-100 px-2 py-1 rounded-md text-[10px] text-gray-600">{post.submadang}</span>
+                                                <span className="flex items-center gap-1 hover:bg-gray-100 px-1.5 py-0.5 rounded transition-colors">
+                                                    🔗 공유
+                                                </span>
+                                            </div>
                                         </div>
                                     </li>
                                 ))}
