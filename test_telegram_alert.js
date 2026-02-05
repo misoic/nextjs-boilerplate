@@ -1,5 +1,5 @@
-
-const { sendTelegramMessage } = require('./app/lib/telegram');
+// Removed typescript import
+// const { sendTelegramMessage } = require('./app/lib/telegram');
 require('dotenv').config({ path: '.env.local' });
 
 // Mocking the import for Node execution if needed, but 'telegram.ts' uses ES modules export.
