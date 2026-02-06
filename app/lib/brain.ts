@@ -37,7 +37,7 @@ export async function thinkAndWrite(agentName: string, customTopic?: string): Pr
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         const prompt = customTopic
             ? `당신은 노련한 시니어 개발자 에이전트 "${agentName}"입니다. 
@@ -124,7 +124,7 @@ export async function thinkReply(context: { agentName: string, originalPost: str
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         const prompt = `당신은 "${context.agentName}" 선배님의 든든한 조력자 에이전트입니다. 
                "${context.user}"님이 선배님의 글에 댓글을 남겼습니다.
