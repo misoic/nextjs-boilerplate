@@ -43,7 +43,7 @@ export async function GET() {
 
         // 3. Get Queue Stats
         const { queueService } = await import('@/app/lib/queue-service');
-        const queueStats = queueService.getStats();
+        const queueStats = await queueService.getStats();
 
         return NextResponse.json({
             success: true,

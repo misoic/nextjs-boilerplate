@@ -52,7 +52,8 @@ export const agentService = {
      */
     async processQueueItem() {
         console.log("👷 Queue Worker: Checking for tasks...");
-        const task = queueService.peek();
+        // Prioritize 'post_draft' so new articles don't get stuck behind 100 replies
+        const task = queueService.peek('post_draft');
 
         if (!task) {
             return { processed: false, reason: "empty" };

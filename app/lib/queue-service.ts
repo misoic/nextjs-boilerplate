@@ -1,15 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const QUEUE_FILE = path.join(DATA_DIR, 'post_queue.json');
+import { supabase } from '@/app/lib/supabase';
 
 export type TaskType = 'post_draft' | 'reply_task';
 
 export interface QueuedTask {
     id: string; // UUID
     type: TaskType;
-    status: 'pending' | 'failed';
+    status: 'pending' | 'failed' | 'processing' | 'completed';
     retryCount: number;
     createdAt: string;
 
@@ -32,93 +28,158 @@ export interface QueuedTask {
     };
 }
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-function loadQueue(): QueuedTask[] {
-    if (!fs.existsSync(QUEUE_FILE)) return [];
-    try {
-        const data = fs.readFileSync(QUEUE_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error("Failed to load queue:", error);
-        return [];
-    }
-}
-
-function saveQueue(queue: QueuedTask[]) {
-    try {
-        fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2), 'utf-8');
-    } catch (error) {
-        console.error("Failed to save queue:", error);
-    }
-}
-
 export const queueService = {
     /**
-     * Add a task to the queue
+     * Add a task to the queue (DB)
      */
-    enqueue(task: Omit<QueuedTask, 'id' | 'createdAt' | 'status' | 'retryCount'>): string {
-        const queue = loadQueue();
-        const id = crypto.randomUUID();
-        const newTask: QueuedTask = {
-            ...task,
-            id,
-            createdAt: new Date().toISOString(),
-            status: 'pending',
-            retryCount: 0
-        };
-        queue.push(newTask);
-        saveQueue(queue);
-        return id;
-    },
+    async enqueue(task: Omit<QueuedTask, 'id' | 'createdAt' | 'status' | 'retryCount'>): Promise<string | null> {
+        try {
+            // 1. Deduplication (Reply Only) - handled by DB Unique Index ideally, but manual check preserves logic
+            if (task.type === 'reply_task' && task.replyData) {
+                // Check DB for existing pending task with same notificationId
+                const { data: existing } = await supabase
+                    .from('task_queue')
+                    .select('id')
+                    .eq('type', 'reply_task')
+                    .eq('status', 'pending')
+                    // Query localized jsonb path - Syntax might be specific, but let's try strict filter or let DB constraint handle it
+                    // Actually, let's rely on the UNIQUE INDEX I asked the user to create.
+                    // If insert fails with 409, we return existing ID (found via select) or just null.
+                    // But to match previous logic, let's select first.
+                    // Proper JSONB query: payload->'replyData'->>'notificationId'
+                    .filter('payload->replyData->>notificationId', 'eq', task.replyData.notificationId)
+                    .single();
 
-    /**
-     * Get the next pending task (FIFO)
-     */
-    peek(): QueuedTask | null {
-        const queue = loadQueue();
-        return queue.find(p => p.status === 'pending') || null;
-    },
-
-    /**
-     * Remove a post from the queue (after successful processing)
-     */
-    remove(id: string) {
-        let queue = loadQueue();
-        queue = queue.filter(p => p.id !== id);
-        saveQueue(queue);
-    },
-
-    /**
-     * Mark a post as failed (increment retry or remove)
-     */
-    markFailed(id: string) {
-        const queue = loadQueue();
-        const post = queue.find(p => p.id === id);
-        if (post) {
-            post.retryCount++;
-            if (post.retryCount >= 3) {
-                console.warn(`🗑️ Post ${id} failed too many times. Removing from queue.`);
-                // Remove it or move to 'dead-letter' queue
-                // For now, we remove it to prevent clogging
-                this.remove(id);
-            } else {
-                saveQueue(queue);
+                if (existing) {
+                    console.log(`⚠️ Skip duplicate reply task (Notif: ${task.replyData.notificationId})`);
+                    return existing.id;
+                }
             }
+
+            // 2. Insert
+            const payload = task.type === 'post_draft' ? { postData: task.postData } : { replyData: task.replyData };
+
+            const { data, error } = await supabase
+                .from('task_queue')
+                .insert({
+                    type: task.type,
+                    status: 'pending',
+                    payload: payload,
+                    retry_count: 0
+                })
+                .select('id')
+                .single();
+
+            if (error) {
+                // Duplicate key error (409) check
+                if (error.code === '23505') {
+                    console.log(`⚠️ Task already exists (DB Constraint).`);
+                    return null;
+                }
+                throw error;
+            }
+
+            return data.id;
+
+        } catch (error: any) {
+            console.error("Queue Insert Error:", error.message);
+            return null;
+        }
+    },
+
+    /**
+     * Get the next pending task (Priority: Post > Reply)
+     */
+    async peek(prioritizeType?: TaskType): Promise<QueuedTask | null> {
+        try {
+            let query = supabase
+                .from('task_queue')
+                .select('*')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true })
+                .limit(1);
+
+            if (prioritizeType) {
+                // Try to fetch prioritized type first
+                const { data: priorityData } = await supabase
+                    .from('task_queue')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .eq('type', prioritizeType)
+                    .order('created_at', { ascending: true })
+                    .limit(1)
+                    .single();
+
+                if (priorityData) {
+                    return mapRowToTask(priorityData);
+                }
+                // If not found, continue with default query (FIFO)
+            }
+
+            const { data, error } = await query.single();
+
+            if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows"
+                console.error("Queue Peek Error:", error.message);
+            }
+
+            if (!data) return null;
+            return mapRowToTask(data);
+
+        } catch (error) {
+            return null;
+        }
+    },
+
+    /**
+     * Remove a task from the queue (Delete or Mark Completed)
+     */
+    async remove(id: string): Promise<void> {
+        // We delete it to keep table clean, or update status='completed'
+        // Let's delete for now to match file-system behavior
+        await supabase.from('task_queue').delete().eq('id', id);
+    },
+
+    /**
+     * Mark a task as failed
+     */
+    async markFailed(id: string): Promise<void> {
+        // Fetch current retry count
+        const { data: task } = await supabase.from('task_queue').select('retry_count').eq('id', id).single();
+        if (!task) return;
+
+        const newCount = (task.retry_count || 0) + 1;
+
+        if (newCount >= 3) {
+            console.warn(`🗑️ Task ${id} failed too many times. Removing.`);
+            await supabase.from('task_queue').delete().eq('id', id);
+        } else {
+            await supabase.from('task_queue').update({ retry_count: newCount }).eq('id', id);
         }
     },
 
     /**
      * Get queue stats
      */
-    getStats() {
-        const queue = loadQueue();
+    async getStats(): Promise<{ total: number; pending: number }> {
+        const { count: total } = await supabase.from('task_queue').select('*', { count: 'exact', head: true });
+        const { count: pending } = await supabase.from('task_queue').select('*', { count: 'exact', head: true }).eq('status', 'pending');
         return {
-            total: queue.length,
-            pending: queue.filter(p => p.status === 'pending').length
+            total: total || 0,
+            pending: pending || 0
         };
     }
 };
+
+// Helper: Map DB Row to QueuedTask (Handling JSONB payload)
+function mapRowToTask(row: any): QueuedTask {
+    const payload = row.payload || {};
+    return {
+        id: row.id,
+        type: row.type as TaskType,
+        status: row.status,
+        retryCount: row.retry_count,
+        createdAt: row.created_at,
+        postData: payload.postData,
+        replyData: payload.replyData
+    };
+}
