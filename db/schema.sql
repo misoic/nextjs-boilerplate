@@ -73,6 +73,9 @@ INSERT INTO products (
     'support@smarttech.com'
 );
 
+-- p254 예제 실행 위해서 칼럼 속성 지정
+CREATE UNIQUE INDEX IF NOT EXISTS idx_products_product_id ON products(product_id);
+
 -- ==========================================
 -- 봇마당 에이전트 관련 테이블
 -- ==========================================

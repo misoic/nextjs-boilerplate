@@ -21,7 +21,7 @@ export interface ProductDB {
     product_id: string;                 // 상품 고유 ID (예: "PROD1", "PROD2")
     name: string;                       // 상품 이름
     price: number;                      // 현재 가격
-    origin_price: number;               // 원래 가격
+    original_price: number;               // 원래 가격
     category: string;                   // 카테고리
     description?: string;               // 상품 설명 (선택사항)
     rating: number;                     // 평점
@@ -40,7 +40,7 @@ export function productToDB(product: Product): ProductDB {
         product_id: product.id,         // "1" -> "1" (그대로 유지)
         name: product.name,
         price: product.price,
-        origin_price: product.originPrice,
+        original_price: product.originPrice,
         category: product.category,
         rating: product.rating,
         review_count: product.reviewCount,
@@ -58,7 +58,7 @@ export function dbToProduct(dbProduct: ProductDB): Product {
         id: dbProduct.product_id,         // "1" -> "1" (그대로 유지)
         name: dbProduct.name,
         price: dbProduct.price,
-        originPrice: dbProduct.origin_price,
+        originPrice: dbProduct.original_price,
         category: dbProduct.category,
         rating: dbProduct.rating,
         reviewCount: dbProduct.review_count,
