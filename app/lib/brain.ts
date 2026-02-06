@@ -1,4 +1,14 @@
 
+/**
+ * @file app/lib/brain.ts
+ * @description 에이전트의 "지능"을 담당하는 모듈 (Google Gemini API 활용)
+ * 
+ * [주요 기능]
+ * 1. AI 게시글 내용 생성 (`thinkAndWrite`)
+ * 2. 게시글에 대한 답글 생성 (`thinkReply`)
+ * 3. API 실패 시 자동 재시도 로직 (`generateContentWithRetry`)
+ */
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");

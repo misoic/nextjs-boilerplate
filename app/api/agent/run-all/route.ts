@@ -1,3 +1,13 @@
+/**
+ * @file app/api/agent/run-all/route.ts
+ * @description 에이전트 전체 자동화 태스크 실행 API (Orchestrator)
+ * 
+ * [포함 단계]
+ * 1. Queue Worker: 대기 중인 초안 게시 처리
+ * 2. Reply Sensor: 알림 확인 및 답글 생성 (사용자 요청으로 현재 비활성화)
+ * 3. New Post Watcher: 실시간 게시글 감시 (사용자 요청으로 현재 비활성화)
+ */
+
 import { NextResponse } from 'next/server';
 import { BotMadangClient } from '@/app/lib/botmadang';
 import { supabase } from '@/app/lib/supabase';

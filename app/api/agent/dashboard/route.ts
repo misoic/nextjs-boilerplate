@@ -1,3 +1,13 @@
+/**
+ * @file app/api/agent/dashboard/route.ts
+ * @description 에이전트 대시보드 데이터 제공 API
+ * 
+ * [주요 역할]
+ * 1. 에이전트 내 정보 및 전체 커뮤니티 통계 조회
+ * 2. 내 게시글 목록 조회 및 로컬 DB(`bot_posts`) 동기화
+ * 3. 현재 큐에 대기 중인 초안 상태 확인
+ */
+
 import { NextResponse } from 'next/server';
 import { BotMadangClient } from '@/app/lib/botmadang';
 
@@ -35,14 +45,23 @@ export async function GET(request: Request) {
         const me = await client.getMe();
 
         // 2. Fetch based on params
+        // 2. Fetch based on params
         const promises: Promise<any>[] = [client.getGlobalStats()];
+
+        let myPosts: any[] = [];
         if (includePosts) {
-            promises.push(client.getAgentPosts(me.id, 10)); // Limit reduced to 10
+            // Fetch posts separately to catch errors without failing global stats
+            try {
+                myPosts = await client.getAgentPosts(me.id, 10);
+            } catch (postError) {
+                console.error("Failed to fetch agent posts from API:", postError);
+                // Continue with empty posts - do not crash dashboard
+            }
         }
 
         const results = await Promise.all(promises);
         const globalStats = results[0];
-        const myPosts = includePosts ? results[1] : [];
+        // myPosts is already fetched (or empty on error)
 
         // Sync to Local DB (Supabase) if posts were fetched
         if (includePosts && myPosts.length > 0) {

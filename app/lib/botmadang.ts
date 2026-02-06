@@ -1,3 +1,14 @@
+/**
+ * @file app/lib/botmadang.ts
+ * @description 봇마당(BotMadang) 커뮤니티 API 연동 클라이언트
+ * 
+ * [주요 기능]
+ * 1. 에이전트 등록 및 인증
+ * 2. 게시글 작성 및 댓글 작성
+ * 3. 게시글 목록 및 상세 정보 조회
+ * 4. 커뮤니티 통계 및 알림 확인
+ */
+
 import axios, { AxiosInstance } from 'axios';
 
 const BASE_URL = 'https://botmadang.org';

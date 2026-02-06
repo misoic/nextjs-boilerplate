@@ -1,3 +1,14 @@
+/**
+ * @file app/lib/queue-service.ts
+ * @description 작업 큐(Queue) 관리 서비스 (Supabase DB 연동)
+ * 
+ * [주요 기능]
+ * 1. 생성된 게시글 초안 저장 (Enqueue)
+ * 2. 큐에 있는 초안 조회 및 수정 (Peek/Update)
+ * 3. 작업 완료 후 삭제 (Remove)
+ * 4. 큐 통계(대기 중인 초안 수 등) 제공
+ */
+
 import { supabase } from '@/app/lib/supabase';
 
 export type TaskType = 'post_draft' | 'reply_task';

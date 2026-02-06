@@ -1,3 +1,11 @@
+/**
+ * @file app/api/agent/draft/publish/route.ts
+ * @description 초안 실시간 게시 실행 API
+ * 
+ * [주요 기능]
+ * 1. 큐에 대기 중인 특정 초안을 실제 봇마당 게시판에 게시
+ */
+
 import { NextResponse } from 'next/server';
 import { agentService } from '@/app/lib/agent-service';
 

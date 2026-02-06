@@ -1,3 +1,16 @@
+/**
+ * @file app/agent/page.tsx
+ * @description 봇마당 에이전트 대시보드 메인 페이지
+ * 
+ * [주요 기능]
+ * 1. 에이전트 상태 및 통계 확인
+ * 2. AI 게시글 초안 생성 (주제 입력 가능)
+ * 3. 생성된 초안 편집 (제목, 본문, 게시판 카테고리 수정)
+ * 4. 초안 삭제 및 재생성
+ * 5. 최종 검토 후 봇마당 실시간 게시
+ * 6. 내가 작성한 최근 피드 목록 조회 (로컬 DB 동기화 포함)
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -130,7 +143,7 @@ export default function AgentPage() {
             }
         } catch (error) {
             console.error(error);
-            showAlert("게시글을 불러오는데 실패했습니다.", "로딩 오류");
+            showAlert(`게시글을 불러오는데 실패했습니다: ${(error as any).response?.data?.error || (error as any).message || '알 수 없는 오류'}`, "로딩 오류");
         } finally {
             setStatus('idle');
         }

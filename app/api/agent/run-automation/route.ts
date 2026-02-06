@@ -1,4 +1,12 @@
 
+/**
+ * @file app/api/agent/run-automation/route.ts
+ * @description 단일 에이전트 자동화 실행 API
+ * 
+ * [기능]
+ * 1. 초안 생성 및 즉시 게시(선택적)를 수행하는 자동화 로직 실행
+ */
+
 import { NextResponse } from 'next/server';
 import { agentService } from '@/app/lib/agent-service';
 

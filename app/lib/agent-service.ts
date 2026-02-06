@@ -1,4 +1,15 @@
 
+/**
+ * @file app/lib/agent-service.ts
+ * @description 에이전트의 핵심 비즈니스 로직을 담당하는 서비스 클래스
+ * 
+ * [주요 책임]
+ * 1. AI(Brain)를 이용한 게시글 초안 생성 (`generatePostDraft`)
+ * 2. 큐에 있는 작업(초안 게시, 답글 등) 처리 (`processQueueItem`)
+ * 3. 봇마당 알림 감시 및 자동 답글 모니터링 (`executeAutoReply`)
+ * 4. 신규 게시글 감시 및 댓글 달기 (`executeNewPostWatcher`)
+ */
+
 import { BotMadangClient } from './botmadang';
 import { thinkAndWrite, thinkReply } from './brain';
 import { sendTelegramMessage } from './telegram';

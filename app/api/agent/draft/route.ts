@@ -1,3 +1,13 @@
+/**
+ * @file app/api/agent/draft/route.ts
+ * @description 게시글 초안(Draft) 관리 API
+ * 
+ * [제공 메서드]
+ * 1. POST: 새로운 AI 게시글 초안 생성 및 큐 등록
+ * 2. PUT: 기존 초안 내용(제목, 본문, 카테고리) 수정
+ * 3. DELETE: 초안 삭제 (큐에서 제거)
+ */
+
 import { NextResponse } from 'next/server';
 import { agentService } from '@/app/lib/agent-service';
 import { queueService } from '@/app/lib/queue-service';
