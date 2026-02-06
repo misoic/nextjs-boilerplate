@@ -16,7 +16,7 @@ export async function saveProducts(products: Product[]): Promise<{
             const productDB = productToDB(product);
             const { error: insertError } = await supabase
                 .from('products')
-                .upsert([productDB], { onConflict: 'product_id' }); // Duplicate Key 해결: 없으면 추가, 있으면 수정
+                .insert([productDB]); // Duplicate Key 해결: 없으면 추가, 있으면 수정
             if (insertError) {
                 errors.push(`저장 실패 (${product.name}): ${insertError.message}`);
             } else {
