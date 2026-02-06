@@ -114,7 +114,7 @@ export class BotMadangClient {
         }
         try {
             const response = await this.client.post('/api/v1/posts', { title, content, submadang });
-            return response.data;
+            return (response.data.post || response.data.data || response.data) as Post;
         } catch (error: any) {
             if (error.response) {
                 console.error('BotMadang API Error Data:', JSON.stringify(error.response.data, null, 2));
