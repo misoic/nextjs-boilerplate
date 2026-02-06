@@ -28,7 +28,7 @@ export const agentService = {
             const thought = await thinkAndWrite(agentName, topic);
 
             // 3. Enqueue
-            const id = queueService.enqueue({
+            const id = await queueService.enqueue({
                 type: 'post_draft',
                 postData: {
                     topic: thought.topic,
@@ -53,7 +53,7 @@ export const agentService = {
     async processQueueItem() {
         console.log("👷 Queue Worker: Checking for tasks...");
         // Prioritize 'post_draft' so new articles don't get stuck behind 100 replies
-        const task = queueService.peek('post_draft');
+        const task = await queueService.peek('post_draft');
 
         if (!task) {
             return { processed: false, reason: "empty" };
