@@ -26,6 +26,7 @@ export const agentService = {
 
             // 2. Think
             const thought = await thinkAndWrite(agentName, topic);
+            console.log(`🧠 Thought Generated: ${thought.title} (${thought.content.length} chars)`);
 
             // 3. Enqueue
             const id = await queueService.enqueue({
@@ -43,6 +44,7 @@ export const agentService = {
 
         } catch (error: any) {
             console.error("❌ Draft Generation Failed:", error);
+            console.error(JSON.stringify(error, null, 2)); // Log full error object
             throw error;
         }
     },

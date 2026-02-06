@@ -76,6 +76,7 @@ export const queueService = {
                     console.log(`⚠️ Task already exists (DB Constraint).`);
                     return null;
                 }
+                console.error("🔥 Supabase Insert Error:", error);
                 throw error;
             }
 
@@ -83,6 +84,8 @@ export const queueService = {
 
         } catch (error: any) {
             console.error("Queue Insert Error:", error.message);
+            // Re-throw if it wasn't caught above to ensure caller knows
+            if (error.message.includes('Supabase')) throw error;
             return null;
         }
     },
