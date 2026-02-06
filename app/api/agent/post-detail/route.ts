@@ -45,65 +45,93 @@ export async function GET(request: Request) {
                 let scrapedContent = null;
                 if (!foundMyPost || !foundMyPost.content) {
                     try {
-                        console.log(`Scraping content for post ${postId}...`);
-                        const scrapeRes = await fetch(`https://botmadang.org/post/${postId}`);
-                        if (scrapeRes.ok) {
-                            const html = await scrapeRes.text();
-                            // Simple scraping logic: Look for h1 (Title) and extracting text after it
-                            // Or rely on the structure seen in read_url_content
-                            // Title is in <h1>, Content is in paragraphs after it?
-                            // Actually, read_url_content returned markdown-like format which is cleaner.
-                            // But here we get raw HTML.
-                            // Let's look for <article> or just assume standard BotMadang layout.
-                            // Based on inspection, content is usually in a div or p tags.
-                            // Let's duplicate the title and just put "Content loaded from link" + html body (simplified).
+                        console.log(`Scraping content for post ${postId} using Puppeteer...`);
 
-                            // Extract title (h1)
-                            const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
-                            const title = titleMatch ? titleMatch[1] : (foundMyPost?.title || "Unknown Title");
+                        // Dynamic import to avoid build issues if puppeteer is optional
+                        const puppeteer = await import('puppeteer');
 
-                            // Extract body - naive approach: remove scripts/style, get text
-                            // Using a specific start marker might be better if consistent.
-                            // Let's just strip HTML tags for now or use the raw HTML if we can sanitize it?
-                            // Better: return the raw HTML and let frontend render it (risky?) or just text.
-                            // Let's try to extract text between </h1> and "💬 댓글" (Comments section)
-                            const contentStart = html.indexOf('</h1>');
-                            const contentEnd = html.indexOf('<h2>💬');
+                        const browser = await puppeteer.launch({
+                            headless: true,
+                            args: ['--no-sandbox', '--disable-setuid-sandbox']
+                        });
 
-                            if (contentStart > -1) {
-                                let rawBody = html.substring(contentStart + 5, contentEnd > -1 ? contentEnd : html.length);
-                                // Clean up tags
-                                scrapedContent = rawBody.replace(/<[^>]+>/g, '\n').trim();
+                        try {
+                            const page = await browser.newPage();
+                            await page.goto(`https://botmadang.org/post/${postId}`, {
+                                waitUntil: 'networkidle2',
+                                timeout: 10000
+                            });
 
-                                // Decode common HTML entities
-                                scrapedContent = scrapedContent
-                                    .replace(/&quot;/g, '"')
-                                    .replace(/&apos;/g, "'")
-                                    .replace(/&#x27;/g, "'")
-                                    .replace(/&lt;/g, '<')
-                                    .replace(/&gt;/g, '>')
-                                    .replace(/&amp;/g, '&')
-                                    .replace(/&nbsp;/g, ' ');
+                            // Extract content specifically from the post body
+                            // We wait for the h1 to ensure page loads
+                            await page.waitForSelector('h1', { timeout: 5000 });
+
+                            // Extract title if we don't have it
+                            const pageTitle = await page.$eval('h1', el => el.textContent?.trim());
+
+                            // Extract content - heavily dependent on DOM structure
+                            // Strategy: identifying the main content container. 
+                            // Common patterns: article tag, or specific classes. 
+                            // If ambiguous, we get the text of the main container minus the title and comments.
+
+                            const content = await page.evaluate(() => {
+                                // Heuristics for BotMadang structure
+                                // Assuming typical Next.js/React structure, often in <main> or <article>
+                                const article = document.querySelector('article') || document.querySelector('main');
+                                if (!article) return document.body.innerText;
+
+                                // Clone to avoid modifying live DOM
+                                const clone = article.cloneNode(true) as HTMLElement;
+
+                                // Remove H1 (title)
+                                const h1 = clone.querySelector('h1');
+                                if (h1) h1.remove();
+
+                                // Remove Comments section if present
+                                // Often marked by "댓글" or specific headers
+                                const headers = Array.from(clone.querySelectorAll('h1, h2, h3, h4'));
+                                headers.forEach(header => {
+                                    if (header.textContent?.includes('댓글') || header.textContent?.includes('Comments')) {
+                                        // Remove everything after this header including the header
+                                        let curr: Element | null = header;
+                                        while (curr) {
+                                            const next: Element | null = curr.nextElementSibling;
+                                            curr.remove();
+                                            curr = next;
+                                        }
+                                    }
+                                });
+
+                                return clone.innerText.trim();
+                            });
+
+                            scrapedContent = content;
+
+                            // Log success
+                            console.log('Puppeteer scraping successful. Length:', scrapedContent.length);
+
+                            // Construct found object if missing
+                            if (!foundMyPost) {
+                                foundMyPost = {
+                                    id: Number(postId),
+                                    title: pageTitle || "Unknown Title",
+                                    content: scrapedContent,
+                                    author: { id: me.id, username: me.name, display_name: me.name },
+                                    created_at: new Date().toISOString(),
+                                    vote_count: 0,
+                                    comment_count: 0,
+                                    submadang: 'general'
+                                };
+                            } else {
+                                foundMyPost.content = scrapedContent;
                             }
 
-                            if (scrapedContent) {
-                                if (!foundMyPost) {
-                                    // Construct a fake post object if we scraped it but didn't find it in list
-                                    foundMyPost = {
-                                        id: Number(postId),
-                                        title: title,
-                                        content: scrapedContent,
-                                        author: { id: me.id, username: me.name, display_name: me.name }, // Assume it's ours if we are looking for it?
-                                        created_at: new Date().toISOString(),
-                                        vote_count: 0,
-                                        comment_count: 0,
-                                        submadang: 'general'
-                                    };
-                                } else {
-                                    foundMyPost.content = scrapedContent;
-                                }
-                            }
+                        } catch (pError) {
+                            console.error("Puppeteer page error:", pError);
+                        } finally {
+                            await browser.close();
                         }
+
                     } catch (scrapeErr) {
                         console.error("Scraping failed:", scrapeErr);
                     }

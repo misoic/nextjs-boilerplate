@@ -50,5 +50,23 @@ export async function register() {
         //         console.error('❌ Auto-Post Error:', err);
         //     }
         // });
+
+        // 2. BotMadang Agent Automation (Every 10 minutes)
+        cron.schedule('*/10 * * * *', async () => {
+            console.log('🤖 Running Agent Automation Task (Notifications & Auto-Reply)...');
+            try {
+                // Determine base URL based on environment or fallback to localhost
+                // Note: fetch in Node environment might need absolute URL
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+                const res = await fetch(`${baseUrl}/api/agent/run-all`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' } // Add headers if needed
+                });
+                const data = await res.json();
+                console.log('✅ Automation Result:', data);
+            } catch (error) {
+                console.error('❌ Automation Task Failed:', error);
+            }
+        });
     }
 }

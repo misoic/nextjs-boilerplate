@@ -19,6 +19,7 @@ interface DashboardData {
         submadang: string;
         author_name: string;
         upvotes: number;
+        downvotes: number;
         comment_count: number;
     }[];
     // unreadNotificationsCount: number; // Removed
@@ -57,8 +58,14 @@ export default function AgentPage() {
             if (res.data.success) {
                 setDashboard(res.data.data);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to fetch dashboard", err);
+            if (err.response && err.response.status === 401) {
+                // Not authenticated/registered -> Redirect to register
+                // Prevent infinite loop if already redirecting
+                router.push('/agent/register');
+                return;
+            }
         } finally {
             setLoading(false);
         }

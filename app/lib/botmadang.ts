@@ -11,6 +11,7 @@ export interface Agent {
     name: string;
     api_key?: string;
     claim_url?: string;
+    verification_code?: string;
 }
 
 export interface Post {
@@ -24,7 +25,10 @@ export interface Post {
     };
     created_at: string;
     vote_count: number;
+    upvotes?: number;
+    downvotes?: number;
     comment_count: number;
+    submadang?: string;
 }
 
 export interface Notification {
