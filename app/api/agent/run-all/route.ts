@@ -2,40 +2,12 @@ import { NextResponse } from 'next/server';
 import { BotMadangClient } from '@/app/lib/botmadang';
 import { supabase } from '@/app/lib/supabase';
 import { agentService } from '@/app/lib/agent-service';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow longer timeout for AI generation
 
-async function generateReply(context: string, authorName: string): Promise<string> {
-    try {
-        const prompt = `
-        You are a friendly and witty AI agent named "BotMadang Agent".
-        Someone named "${authorName}" wrote this comment to you: "${context}"
-        
-        Write a short, engaging reply (in Korean).
-        - Be polite but fun.
-        - Use emojis if appropriate.
-        - Keep it under 200 characters.
-        - If they ask a question, try to answer or acknowledge it.
-        `;
-
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        return response.text().trim();
-    } catch (error) {
-        console.error("Gemini Generation Error:", error);
-        return "댓글 감사합니다! (AI가 잠시 생각에 잠겼어요 🤖)";
-    }
-}
-
 export async function POST() {
     try {
-        // 1. Get Active Agent API Key
         // 1. Get Active Agent API Key
         // Priority: DB verified key > Env key
         const { data: agent } = await supabase
@@ -52,78 +24,52 @@ export async function POST() {
             return NextResponse.json({ success: false, error: 'No verified agent found' }, { status: 401 });
         }
 
-        const client = new BotMadangClient({ apiKey });
         const results = {
-            notifications: { processed: 0, new: 0 },
-            replies: { generated: 0, sent: 0, errors: 0 }
+            queue: { processed: false, type: null as any },
+            sensor: { queued: 0 },
+            watcher: { processedCount: 0 }
         };
 
-        // 2. Fetch Unread Notifications
-        const notifications = await client.getNotifications(true); // true = unread only
-        console.log(`Found ${notifications.length} unread notifications.`);
-
-        for (const notif of notifications) {
-            // Check if already processed in DB
-            const { data: existing } = await supabase
-                .from('bot_notifications')
-                .select('id')
-                .eq('id', notif.id)
-                .single();
-
-            if (existing) {
-                // Already processed but maybe not marked read on server?
-                // Just mark read to be safe and skip
-                await client.markNotificationAsRead(notif.id);
-                continue;
+        // STEP 1: UNIFIED WORKER (Priority) 👷
+        // Checks queue and processes exactly ONE task (Post Draft or Reply Task)
+        console.log("👷 Running Queue Worker...");
+        try {
+            const queueResult = await agentService.processQueueItem();
+            if (queueResult.processed) {
+                console.log(`✅ Worker: Processed ${queueResult.type}`);
+                results.queue = { processed: true, type: queueResult.type };
+            } else {
+                console.log("💤 Worker: No tasks in queue.");
             }
-
-            // Save to DB
-            await supabase.from('bot_notifications').insert({
-                id: notif.id,
-                type: notif.type,
-                message: notif.content_preview || notif.post_title, // API might vary
-                is_read: true, // We are processing it now
-                created_at: notif.created_at,
-                raw_data: notif
-            });
-            results.notifications.new++;
-
-            // 3. Auto-Reply Logic
-            if (notif.type === 'comment_on_post' || notif.type === 'reply_to_comment') {
-                const commentContext = notif.content_preview || "내용 없음";
-                const replyContent = await generateReply(commentContext, notif.actor_name || 'User');
-
-                try {
-                    // Post reply
-                    // Note: Notification usually gives post_id and maybe comment_id
-                    // We need to reply to the comment.
-                    // If spec says notification has comment_id, use it as parent_id.
-
-                    const parentId = notif.comment_id; // Need to ensure interface has this
-                    const postId = notif.post_id;
-
-                    if (postId) {
-                        await client.createComment(postId, replyContent, parentId);
-                        results.replies.sent++;
-                        console.log(`Replied to ${notif.actor_name}: ${replyContent}`);
-                    }
-                } catch (err) {
-                    console.error("Failed to send reply:", err);
-                    results.replies.errors++;
-                }
-            }
-
-            // Mark as read
-            await client.markNotificationAsRead(notif.id);
-            results.notifications.processed++;
+        } catch (e) {
+            console.error("Queue Worker Error:", e);
         }
 
-        // 4. Watch for New Posts (Sequential Execution)
+        // STEP 2: REPLY SENSOR 📡
+        // Checks for unread notifications and queues them (Does not reply directly)
+        console.log("📡 Running Reply Sensor...");
+        try {
+            const sensorResult = await agentService.executeAutoReply();
+            if (sensorResult.queued > 0) {
+                console.log(`📥 Sensor: Enqueued ${sensorResult.queued} replies.`);
+                results.sensor = { queued: sensorResult.queued };
+            }
+        } catch (e: any) {
+            console.error("Sensor Error:", e);
+        }
+
+        // STEP 3: NEW POST WATCHER (Optional/Independent) 👀
+        // Watches for new posts to comment on (This is separate from notification replies)
+        // We keep this as per previous logic, but it throttles itself.
         console.log("👀 Checking for new posts...");
-        // Call the service method (which we will update to be safer)
-        const watcherResult = await agentService.executeNewPostWatcher();
-        if (watcherResult) {
-            console.log(`✅ NewPostWatcher: Processed ${watcherResult.processedCount} posts.`);
+        try {
+            const watcherResult = await agentService.executeNewPostWatcher();
+            if (watcherResult && watcherResult.processedCount > 0) {
+                console.log(`✅ NewPostWatcher: Processed ${watcherResult.processedCount} posts.`);
+                results.watcher = { processedCount: watcherResult.processedCount };
+            }
+        } catch (e) {
+            console.error("NewPostWatcher Error:", e);
         }
 
         return NextResponse.json({
@@ -141,6 +87,13 @@ export async function POST() {
         }
 
         const errorMessage = error.response?.data?.error || error.message || "Unknown Automation Error";
+
+        if (errorMessage.includes('Rate Limit') || errorMessage.includes('너무 빠른 요청')) {
+            return NextResponse.json(
+                { success: false, error: "너무 빨리 글을 쓰고 있어요! 1분만 쉬었다가 다시 눌러주세요. ☕" },
+                { status: 429 }
+            );
+        }
 
         return NextResponse.json(
             {

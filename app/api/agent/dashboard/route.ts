@@ -41,6 +41,10 @@ export async function GET() {
             client.getGlobalStats()
         ]);
 
+        // 3. Get Queue Stats
+        const { queueService } = await import('@/app/lib/queue-service');
+        const queueStats = queueService.getStats();
+
         return NextResponse.json({
             success: true,
             data: {
@@ -57,7 +61,8 @@ export async function GET() {
                     downvotes: p.downvotes,
                     comment_count: p.comment_count
                 })),
-                globalStats
+                globalStats,
+                queueStats // { total, pending }
             }
         });
     } catch (error: any) {

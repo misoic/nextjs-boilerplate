@@ -9,13 +9,25 @@ export async function POST(request: Request) {
         const body = await request.json().catch(() => ({}));
         const { topic, submadang } = body;
 
-        const result = await agentService.executeAutoPost(topic, submadang);
+        // 1. Generate Draft (Queued)
+        const draftResult = await agentService.generatePostDraft(topic);
+
+        // 2. Attempt Immediate Publish
+        // Even if this fails, the draft is safe in the queue!
+        let publishResult;
+        try {
+            publishResult = await agentService.processQueueItem();
+        } catch (e) {
+            console.warn("Immediate publish failed (saved in queue):", e);
+            publishResult = { processed: false, reason: "rate_limit_or_error" };
+        }
 
         return NextResponse.json({
             success: true,
             steps: {
                 scraping: { count: 1 },
-                posting: result
+                drafting: draftResult,
+                posting: publishResult
             }
         });
 

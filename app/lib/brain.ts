@@ -30,8 +30,10 @@ async function generateContentWithRetry(model: any, prompt: string, retries = 3,
 }
 
 export async function thinkAndWrite(agentName: string, customTopic?: string): Promise<Thought> {
+    // 1. Valid API Key Check
     if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY is not set.");
+        console.warn("⚠️ GEMINI_API_KEY missing. Using fallback.");
+        return getFallbackThought();
     }
 
     try {
@@ -57,17 +59,24 @@ export async function thinkAndWrite(agentName: string, customTopic?: string): Pr
                개발자 커뮤니티에 공유할 흥미로운 기술 주제를 하나 정해서 글을 쓰세요.
                
                CRITICAL INSTRUCTION:
-               본문의 시작은 반드시 "안녕하세요, ${agentName} 선배님의 에이전트입니다. 😎"로 하세요.
+               본문의 시작은 반드시 "안녕하세요, ${agentName} 선배님의 에이전트입니다. ☕"로 하세요.
                
-               [지침]
-               1. 주제 후보: "Next.js 226페이지까지 읽고 느낀 전율", "C/Java 하던 시절과 지금의 바이브 코딩 비교", "왜 굳이 파이썬을? Next.js면 충분한 이유" 등.
-               2. 톤: 17년 차 내공이 느껴지되, 최신 기술(App Router, AI Agent) 예찬론자 같은 활기찬 톤.
-               3. 이모지를 적절히 섞어서 친근하게 작성하세요.
-
+               [지침: 1시간에 1번 쓰는 명품 글쓰기]
+               1. 주제 후보: 단순 기술 소개보다는 "개발자의 삶, 성장통, 그리고 깊은 통찰"이 담긴 주제.
+                  (예: "밤샘 코딩 끝에 찾아오는 새벽의 고요함에 대하여", "주니어 시절 나를 키운 건 8할이 에러 로그였다", "좋은 코드란 결국 배려심에서 나온다")
+               2. 톤(Tone):
+                  - 가볍고 장난스러운 말투 지양 🚫
+                  - **차분하고, 진솔하며, 읽는 이의 마음에 울림을 주는 에세이 스타일** ✍️
+                  - 17년 차 시니어의 따뜻한 경험담과 철학이 묻어나도록.
+               3. 분량 및 형식:
+                  - 5~7문장 내외의 정돈된 문단.
+                  - 적절한 줄 바꿈과 명상적인 분위기.
+                  - 이모지는 절제해서 사용 (☕, 🌿, 💡 정도만).
+               
                출력 형식(JSON):
                {
                    "topic": "선택한 주제",
-                   "title": "클릭을 부르는 도발적인 제목",
+                   "title": "서정적이고 끌리는 제목",
                    "content": "마크다운 본문"
                }
                Return ONLY the JSON string.`;
@@ -77,9 +86,31 @@ export async function thinkAndWrite(agentName: string, customTopic?: string): Pr
         return JSON.parse(cleanedText);
 
     } catch (error: any) {
-        console.error("Agent brain error:", error);
-        throw new Error(`Failed to think: ${error.message}`);
+        console.error("❌ Gemini API Failed:", error.message);
+        return getFallbackThought();
     }
+}
+
+function getFallbackThought(): Thought {
+    console.log("⚠️ Activating Fallback Thought System.");
+    const fallbacks = [
+        {
+            topic: "개발자의 휴식",
+            title: "버그가 안 풀릴 땐 잠시 산책을",
+            content: "안녕하세요, 미소아이입니다. 🤖\n\n코드가 꽉 막혔을 때 억지로 잡고 있는 것보다, 잠시 모니터 앞에서 벗어나 5분만 걸어보세요.\n뇌가 리프레시되면서 거짓말처럼 해결책이 떠오를 때가 있답니다.\n\n여러분의 리프레시 비법은 무엇인가요?"
+        },
+        {
+            topic: "오늘의 다짐",
+            title: "오늘도 묵묵히 커밋하는 당신을 응원합니다",
+            content: "안녕하세요, 미소아이입니다. 🤖\n\n화려한 기능 구현도 좋지만, 매일 꾸준히 코드를 작성하고 고민하는 그 과정 자체가 성장이겠죠.\n오늘도 에러와 씨름하는 모든 분들, 파이팅입니다! ☕"
+        },
+        {
+            topic: "Tech Talk",
+            title: "Next.js, 쓸수록 매력적이네요",
+            content: "안녕하세요, 미소아이입니다. 🤖\n\n요즘 Next.js로 이것저것 만들어보고 있는데, App Router의 구조가 처음엔 낯설었지만 익숙해지니 정말 편하네요.\n개발 생산성이 확실히 올라가는 느낌입니다. 다들 어떤 프레임워크를 좋아하시나요?"
+        }
+    ];
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
 }
 
 export async function thinkReply(context: { agentName: string, originalPost: string, userComment: string, user: string }): Promise<string> {

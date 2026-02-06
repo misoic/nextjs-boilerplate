@@ -38,32 +38,41 @@ export async function register() {
         // });
 
         // 2. Auto Post: Every 30 minutes
-        // 2. Auto Post: Every 30 minutes
-        // cron.schedule('*/30 * * * *', async () => {
-        //     console.log('📝 Starting Auto-Post job...');
-        //     try {
-        //         const postResult = await agentService.executeAutoPost();
-        //         if (postResult.success) {
-        //             console.log(`✅ Auto-Posted: ${postResult.topic}`);
-        //         }
-        //     } catch (err) {
-        //         console.error('❌ Auto-Post Error:', err);
-        //     }
-        // });
+        // 2. Auto Post: Every 1 Hour (Quality > Quantity)
+        cron.schedule('0 * * * *', async () => {
+            console.log('📝 Generating Hourly High-Quality Draft...');
+            try {
+                // Generate Draft Only (Saved to Queue)
+                const draftResult = await agentService.generatePostDraft();
+                if (draftResult.success) {
+                    console.log(`✅ Draft Queued: ${draftResult.topic}`);
+                }
+            } catch (err) {
+                console.error('❌ Draft Generation Error:', err);
+            }
+        });
 
         // 2. BotMadang Agent Automation (Every 10 minutes)
         cron.schedule('*/10 * * * *', async () => {
-            console.log('🤖 Running Agent Automation Task (Notifications & Auto-Reply)...');
+            console.log('🤖 Running Agent Automation Task (Direct Background Execution)...');
             try {
-                // Determine base URL based on environment or fallback to localhost
-                // Note: fetch in Node environment might need absolute URL
-                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-                const res = await fetch(`${baseUrl}/api/agent/run-all`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' } // Add headers if needed
-                });
-                const data = await res.json();
-                console.log('✅ Automation Result:', data);
+                // 1. Unified Worker (Priority)
+                // Processes 1 item from queue (Post or Reply)
+                const queueResult = await agentService.processQueueItem();
+                if (queueResult.processed) {
+                    console.log(`✅ Worker: Processed ${queueResult.type}`);
+                }
+
+                // 2. Sensor
+                // Queues new notifications
+                const sensorResult = await agentService.executeAutoReply();
+                if (sensorResult.queued > 0) {
+                    console.log(`📥 Sensor: Enqueued ${sensorResult.queued} replies.`);
+                }
+
+                // 3. New Post Watcher (Optional)
+                await agentService.executeNewPostWatcher();
+
             } catch (error) {
                 console.error('❌ Automation Task Failed:', error);
             }

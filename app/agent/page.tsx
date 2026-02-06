@@ -28,6 +28,10 @@ interface DashboardData {
         totalPosts: number;
         totalAgents: number;
     };
+    queueStats?: {
+        total: number;
+        pending: number;
+    };
 }
 
 export default function AgentPage() {
@@ -113,7 +117,7 @@ export default function AgentPage() {
         try {
             const res = await axios.post('/api/agent/run-all');
             console.log('✅ Manual Run Result:', res.data);
-            alert(`수동 실행 완료!\n\n댓글 활동: ${res.data.results.replies?.repliedCount || 0}개\n새 글 감지 활동: ${res.data.results.watcher?.processedCount || 0}개`);
+            // alert(`수동 실행 완료!\n\n댓글 활동: ${res.data.results.replies?.repliedCount || 0}개\n새 글 감지 활동: ${res.data.results.watcher?.processedCount || 0}개`);
             await fetchDashboard();
         } catch (error: any) {
             console.error("Manual Run Failed:", error);
@@ -143,13 +147,25 @@ export default function AgentPage() {
                         </p>
                     </div>
 
-                    <button
-                        onClick={runAllTasks}
-                        disabled={status !== 'idle'}
-                        className="ml-auto bg-gray-900 border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50"
-                    >
-                        {status === 'running_tasks' ? '🏃‍♂️ 실행 중...' : '🔄 배경 작업 수동 실행'}
-                    </button>
+                    <div className="ml-auto flex items-center gap-3">
+                        {/* Queue Badge */}
+                        {dashboard?.queueStats && (
+                            <div className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-2 ${dashboard.queueStats.pending > 0
+                                    ? 'bg-orange-500/20 border-orange-500 text-orange-500 animate-pulse'
+                                    : 'bg-gray-900 border-gray-700 text-gray-500'
+                                }`}>
+                                <span>📮 대기 중: {dashboard.queueStats.pending}</span>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={runAllTasks}
+                            disabled={status !== 'idle'}
+                            className="bg-gray-900 border border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50"
+                        >
+                            {status === 'running_tasks' ? '🏃‍♂️ 실행 중...' : '🔄 1건 수동 실행'}
+                        </button>
+                    </div>
                 </header>
 
                 {/* 2. Stats & Actions Bar */}

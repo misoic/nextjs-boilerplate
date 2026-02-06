@@ -1,118 +1,155 @@
 
-
 import { BotMadangClient } from './botmadang';
 import { thinkAndWrite, thinkReply } from './brain';
 import { sendTelegramMessage } from './telegram';
 import fs from 'fs';
+import { queueService } from './queue-service';
 
 export const agentService = {
     /**
-     * Executes the autonomous post workflow
+     * Step 1: Generate a post and save to queue (Does NOT post to API)
      */
-    async executeAutoPost(topic?: string, submadang: string = 'general') {
-        console.log("🤖 AutoPost: Agent is waking up...");
+    async generatePostDraft(topic?: string) {
+        console.log("🧠 AutoPost: Generating Draft...");
         try {
-            // Fetch API Key
+            // 1. Get Agent Name
             const { supabase } = await import('@/app/lib/supabase');
             const { data: dbAgent } = await supabase
                 .from('agents')
-                .select('api_key')
+                .select('name') // Only need name for thinking
                 .eq('is_verified', true)
                 .order('updated_at', { ascending: false })
                 .limit(1)
                 .single();
 
-            const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
-
-            if (!apiKey) throw new Error("No verified agent found. Please register first.");
-
-            const client = new BotMadangClient({ apiKey });
-
-            // 1. Get Agent Info
-            const agent = await client.getMe();
-            console.log(`🤖 AutoPost: Acting as ${agent.name} `);
+            const agentName = dbAgent?.name || "Agent";
 
             // 2. Think
-            console.log("🧠 AutoPost: Thinking...");
-            const thought = await thinkAndWrite(agent.name, topic);
+            const thought = await thinkAndWrite(agentName, topic);
 
-            // 3. Post
-            console.log(`📝 AutoPost: Posting topic "${thought.topic}" to ${submadang}...`);
-            const post = await client.createPost(
-                thought.title || "무제",
-                thought.content || "내용 없음",
-                submadang
-            );
-
-            if (post.id) {
-                console.log(`✅ Post created! ID: ${post.id} `);
-                await sendTelegramMessage(`📝 <b>새 글 작성 완료! < /b>\n\n<b>제목:</b > ${thought.topic} \n\n < a href = "https://botmadang.org/post/${post.id}" > 게시글 보기 </a>`);
-            }
-
-            return {
-                success: true,
-                topic: thought.topic,
-                postId: post.id
-            };
-        } catch (error: any) {
-            console.error("❌ AutoPost Detailed Error:", error);
-            if (error.response) {
-                console.error("🔍 AutoPost API Response:", JSON.stringify(error.response.data, null, 2));
-            }
-
-            if (error.response?.status === 429) {
-                throw new Error("너무 빠른 요청입니다. 잠시 후 다시 시도해주세요. (Rate Limit Exceeded)");
-            }
-            if (error.message.includes('Max retries exceeded') || error.message.includes('Failed to think')) {
-                throw new Error("AI가 잠시 휴식 중입니다. 30초 뒤에 다시 시도해주세요! 🤯");
-            }
-            // Pass through the detailed message
-            throw new Error(`AutoPost Failed: ${error.response?.data?.error || error.message}`);
-        }
-    },
-
-    /**
-     * Helper to process a single notification reply
-     */
-    async replyToNotification(client: BotMadangClient, me: any, notif: any) {
-        if (notif.type !== 'comment_on_post' && notif.type !== 'reply_to_comment') return null;
-
-        console.log(`🔔 Processing notification from ${notif.actor_name}: ${notif.content_preview}`);
-
-        try {
-            // Think Reply
-            const replyContent = await thinkReply({
-                agentName: me.name,
-                originalPost: notif.post_title,
-                userComment: notif.content_preview || "내용 없음",
-                user: notif.actor_name
+            // 3. Enqueue
+            const id = queueService.enqueue({
+                type: 'post_draft',
+                postData: {
+                    topic: thought.topic,
+                    title: thought.title,
+                    content: thought.content,
+                    submadang: 'general'
+                }
             });
 
-            // Post Reply
-            if (notif.comment_id) {
-                await client.createComment(notif.post_id, replyContent, notif.comment_id);
-                // Mark as read ONLY if successful
-                await client.markNotificationAsRead(notif.id);
+            console.log(`✅ Draft saved to queue! ID: ${id}`);
+            return { success: true, queueId: id, topic: thought.topic };
 
-                const notifUser = notif.actor_name || "Unknown";
-                await sendTelegramMessage(`🔔 <b>답글 작성 완료!</b>\n\n<b>사용자:</b> ${notifUser}\n<b>내용:</b> ${replyContent}`);
-
-                return `Replied to ${notif.actor_name} on "${notif.post_title}"`;
-            }
-        } catch (err: any) {
-            console.error(`Failed to process notification ${notif.id}:`, err.message);
-            throw err; // Re-throw to handle upstream
+        } catch (error: any) {
+            console.error("❌ Draft Generation Failed:", error);
+            throw error;
         }
-        return null;
     },
 
     /**
-     * Executes the comment reply workflow
+     * UNIFIED WORKER: Process a single task from the queue (Post or Reply)
+     */
+    async processQueueItem() {
+        console.log("👷 Queue Worker: Checking for tasks...");
+        const task = queueService.peek();
+
+        if (!task) {
+            return { processed: false, reason: "empty" };
+        }
+
+        console.log(`🚀 Processing Task: [${task.type}] ${task.id}`);
+
+        try {
+            // Fetch API Key (Shared)
+            const { supabase } = await import('@/app/lib/supabase');
+            const { data: dbAgent } = await supabase
+                .from('agents')
+                .select('api_key, name')
+                .eq('is_verified', true)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
+            if (!apiKey) throw new Error("No verified agent found.");
+
+            const client = new BotMadangClient({ apiKey });
+
+            // --- TYPE 1: POST DRAFT ---
+            if (task.type === 'post_draft' && task.postData) {
+                const post = await client.createPost(
+                    task.postData.title,
+                    task.postData.content,
+                    task.postData.submadang
+                );
+                console.log(`✅ Published Post! ID: ${post.id}`);
+                await sendTelegramMessage(`📝 <b>새 글 게시 완료!</b>\n\n<b>제목:</b> ${task.postData.title}\n<a href="https://botmadang.org/post/${post.id}">게시글 보기</a>`);
+                queueService.remove(task.id);
+                return { processed: true, type: 'post', id: post.id };
+            }
+
+            // --- TYPE 2: REPLY TASK ---
+            if (task.type === 'reply_task' && task.replyData) {
+                const { replyData } = task;
+                console.log(`💬 Thinking reply for user ${replyData.user}...`);
+
+                // Think
+                const replyContent = await thinkReply({
+                    agentName: dbAgent?.name || "Agent",
+                    originalPost: replyData.postTitle,
+                    userComment: replyData.userComment,
+                    user: replyData.user
+                });
+
+                // Post Comment
+                await client.createComment(replyData.postId, replyContent, replyData.commentId);
+                console.log(`✅ Posted Reply to ${replyData.user}`);
+
+                await sendTelegramMessage(`🔔 <b>답글 작성 완료!</b>\n\n<b>사용자:</b> ${replyData.user}\n<b>내용:</b> ${replyContent}`);
+
+                // Mark notification read? (It was already marked read/processed when queued? No, usually we mark read AFTER reply.)
+                // Ah, the sensing logic should grab unread, enqueue it, AND mark it read? 
+                // Or leave it unread until processed?
+                // BETTER: Leave it unread. But then sensing will pick it up again.
+                // FIX: Sensing should mark it as Read OR we track "Queued" notifications?
+                // SAFEST: Sensing marks notification as READ immediately after Enqueue success.
+                // If tasks fail in Queue, they stay in Queue (retry).
+
+                // Wait, if we mark read in sensing, we lose the "Unread" beacon.
+                // But if we don't, sensing will duplicate tasks.
+                // DECISION: Sensing marks notification as READ immediately after Enqueue success.
+                // If tasks fail in Queue, they stay in Queue (retry).
+
+                // Note: We need notification ID to mark read? 
+                // Currently `replyData` has `notificationId`.
+                // Actually, let's assume Sensing marked it read.
+
+                queueService.remove(task.id);
+                return { processed: true, type: 'reply', user: replyData.user };
+            }
+
+            // Unknown Type
+            console.warn(`⚠️ Unknown task type: ${task.type}. Removing.`);
+            queueService.remove(task.id);
+            return { processed: false, reason: "unknown_type" };
+
+        } catch (error: any) {
+            console.error(`❌ Task ${task.type} Failed:`, error.message);
+            if (error.response?.status === 429) {
+                console.warn("⚠️ Rate Limit Hit. Keeping in queue.");
+                throw new Error("너무 빠른 요청입니다. (Rate Limit)");
+            }
+            queueService.markFailed(task.id);
+            throw error;
+        }
+    },
+
+    /**
+     * SENSOR: Scan for notifications and enqueue tasks (Do not reply directly)
      */
     async executeAutoReply() {
-        // console.log("💬 AutoReply: Checking notifications...");
         try {
-            // Fetch API Key
             const { supabase } = await import('@/app/lib/supabase');
             const { data: dbAgent } = await supabase
                 .from('agents')
@@ -121,71 +158,55 @@ export const agentService = {
                 .order('updated_at', { ascending: false })
                 .limit(1)
                 .single();
-
             const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
-
-            if (!apiKey) {
-                console.log("AutoReply: No verified agent found.");
-                return { success: false, error: "No verified agent" };
-            }
+            if (!apiKey) return { success: false, error: "No agent" };
 
             const client = new BotMadangClient({ apiKey });
 
             // 1. Get Unread Notifications
-            // 1. Get Unread Notifications
             const notifications = await client.getNotifications(true);
-            if (notifications.length > 0) {
-                console.log(`🔎 Found ${notifications.length} unread notifications.`);
-            }
+            const unreadCount = notifications.length;
 
-            const repliedLog: string[] = [];
+            if (unreadCount === 0) return { success: true, queued: 0 };
 
-            // 1.5 Get Me (once)
-            const me = await client.getMe();
+            console.log(`🔎 Found ${unreadCount} unread notifications.`);
 
-            // 2. Process Notifications with Throttling
-            // 2. Process Notifications with Throttling
-            for (const notif of notifications) {
-                try {
-                    const result = await this.replyToNotification(client, me, notif);
-                    if (result) {
-                        repliedLog.push(result);
-                        console.log(`✅ ${result}`);
+            // Queue All Valid Notifications (Limit only if crazy high, e.g., > 20)
+            const safeLimit = notifications.slice(0, 10);
+            let queuedCount = 0;
 
-                        // THROTTLING: Wait longer to avoid 429
-                        // (Only wait if it's not the last one)
-                        if (notif !== notifications[notifications.length - 1]) {
-                            console.log("⏳ Waiting 15s for rate limit...");
-                            await new Promise(resolve => setTimeout(resolve, 15000));
-                        }
-                    } else if (notif.type === 'upvote_on_post') {
-                        await client.markNotificationAsRead(notif.id);
-                        // Throttle
-                        await new Promise(r => setTimeout(r, 15000));
-                    }
-                } catch (error: any) {
-                    // DUPLICATE COMMENT HANDLING
-                    if (error.response?.data?.error?.includes('이미 동일한 댓글') ||
-                        error.message?.includes('동일한 댓글')) {
-                        console.warn(`⚠️ Duplicate comment detected for ${notif.id}. Marking as read.`);
-                        await client.markNotificationAsRead(notif.id);
-                        continue;
-                    }
-                    console.error(`Skipping notification ${notif.id} due to error:`, error.message);
+            for (const notif of safeLimit) {
+                // Filter relevant types
+                if (notif.type !== 'comment_on_post' && notif.type !== 'reply_to_comment') {
+                    await client.markNotificationAsRead(notif.id);
+                    continue;
                 }
+
+                // Check for duplicates? (handled by mark read)
+
+                // ENQUEUE
+                queueService.enqueue({
+                    type: 'reply_task',
+                    replyData: {
+                        notificationId: String(notif.id),
+                        postId: notif.post_id,
+                        commentId: notif.comment_id,
+                        user: notif.actor_name || "Unknown",
+                        userComment: notif.content_preview || "",
+                        postTitle: notif.post_title || ""
+                    }
+                });
+
+                // Mark Read IMMEDIATELY to prevent double queuing
+                await client.markNotificationAsRead(notif.id);
+                queuedCount++;
             }
 
-            console.log(`✅ AutoReply: Processed ${repliedLog.length} interactions.`);
-            return {
-                success: true,
-                repliedCount: repliedLog.length,
-                logs: repliedLog
-            };
+            console.log(`📥 Queued ${queuedCount} reply tasks.`);
+            return { success: true, queued: queuedCount };
+
         } catch (error: any) {
-            console.error("AutoReply Error:", error);
-            if (error.response?.status === 429) {
-                throw new Error("너무 빠른 요청입니다. 잠시 후 다시 시도해주세요. (Rate Limit Exceeded)");
-            }
+            console.error("AutoReply Sensor Error:", error);
             throw error;
         }
     },
@@ -244,7 +265,6 @@ export const agentService = {
             }
 
             // 3. Find New Posts
-            // 3. Find New Posts
             const newPosts: any[] = [];
             for (const post of posts) {
                 // Safety Check: Ensure post and author exist
@@ -260,7 +280,7 @@ export const agentService = {
             }
 
             if (newPosts.length === 0) {
-                console.log("💤 No new posts.");
+                // console.log("💤 No new posts.");
                 return;
             }
 
