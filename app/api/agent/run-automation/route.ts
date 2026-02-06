@@ -33,6 +33,15 @@ export async function POST(request: Request) {
 
     } catch (error: any) {
         console.error("Agent error:", error);
+
+        const msg = error.message || "";
+        if (msg.includes('429') || msg.includes('Rate Limit') || msg.includes('too many requests')) {
+            return NextResponse.json({
+                success: false,
+                error: "잠시만요! 생각할 시간이 조금 더 필요해요. 🧠 (과부하 방지)"
+            }, { status: 429 });
+        }
+
         return NextResponse.json({
             success: false,
             error: error.message || "Agent failed"

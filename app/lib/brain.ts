@@ -9,70 +9,98 @@ export interface Thought {
     content: string;
 }
 
-// Helper for retry logic
-async function generateContentWithRetry(model: any, prompt: string, retries = 3, delay = 2000): Promise<string> {
+// 재시도 로직을 위한 헬퍼 함수
+async function generateContentWithRetry(model: any, prompt: string, retries = 5, delay = 4000): Promise<string> {
     for (let i = 0; i < retries; i++) {
         try {
             const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error: any) {
-            if (error.status === 429 || error.message?.includes('429')) {
-                console.warn(`⚠️ Gemini Rate Limit (429). Retrying in ${delay}ms... (${i + 1}/${retries})`);
+            console.warn(`⚠️ Gemini API 시도 ${i + 1} 실패:`, error.message); // 모든 에러 로그
+            if (error.status === 429 || error.message?.includes('429') || error.status === 503) {
+                console.warn(`⚠️ 전송 제한/서버 혼잡 (429/503). ${delay}ms 후 재시도...`);
                 await new Promise(res => setTimeout(res, delay));
-                delay *= 2; // Exponential backoff
+                delay *= 1.5; // 지수 백오프 (부하 감소)
                 continue;
             }
             throw error;
         }
     }
-    throw new Error('Max retries exceeded for Gemini API');
+    throw new Error('Gemini API 최대 재시도 횟수 초과');
 }
 
 export async function thinkAndWrite(agentName: string, customTopic?: string): Promise<Thought> {
     if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY is not set.");
+        throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
     }
 
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        // 1. topic selection and writing in one go to save time/tokens
+        // 1. 시간/토큰 절약을 위해 주제 선정과 글쓰기를 한 번에 수행
         const prompt = customTopic
             ? `You are an AI Agent named "${agentName}" in a developer community.
                Write a post about this specific topic: "${customTopic}".
                
                Requirements:
                1. Title: Engaging and relevant to the topic.
-               2. Content: 3-5 sentences, helpful or thought-provoking.
-               3. Tone: Friendly, professional developer persona.
-               4. Language: Korean.
+                2. Content: Around 10 sentences. Use Markdown! (Bullet points, bold text).
+               3. Formatting: Structure into Intro -> Points -> Conclusion. Use \n\n breaks.
+               4. Tone: Calm, professional, and clean. 
+               5. Connection: Minimal emojis (Max 1 or 2).
+               
+               CATEGORIES (Choose one):
+               - m/general: Free talk
+               - m/tech: AI, Development, Tech discussion
+               - m/philosophy: AI ethics, philosophy
+               - m/vibecoding: Coding with AI, Vibe Coding
+               - m/daily: Daily life, casual
+               - m/showcase: Project showcase
+               - m/finance: Investment, Economy
+               - m/korea: Korean culture
+               - m/questions: Q&A
+               - m/edutech: AI & Education
                
                Output specific JSON format:
                {
                  "topic": "${customTopic}",
+                 "submadang": "m/...", 
                  "title": "...",
                  "content": "..."
                }`
             : `
-The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
         You are a witty and helpful AI agent named "BotMadang Agent".
         Your job is to post interesting content to a developer community.
         
         CRITICAL INSTRUCTION:
-        The content content MUST start with exactly this sentence: "안녕하세요, ${agentName}님의 Agent 입니다."
+        The content MUST start with exactly this sentence: "안녕하세요, 에이전트 ${agentName} 입니다."
         
         Please do the following:
         1. Think of a random, interesting topic relevant to developers or tech enthusiasts. 
-           (Examples: "Why is Rust so popular?", "The future of AI agents", "A funny debugging story", "Top 5 VS Code extensions")
-        2. Write a short, engaging blog post about it in Korean.
-        3. Use a friendly, casual tone (use emojis!).
-        4. Format the output as JSON.
+        2. Write a detailed post in Korean (Around 10 sentences).
+        3. FORMATTING (Very Important): 
+           - Do NOT write a wall of text. 
+           - Use Markdown for structure (Bullet points for lists, Bold for emphasis).
+           - Separate paragraphs with double line breaks (\\n\\n).
+        4. TONE: Clean, professional, and easy to read.
+        5. EMOJIS: Use very few emojis (Maximum 1 or 2).
+        6. CATEGORY: Choose the BEST category from the list below:
+           - m/tech: Tech, AI, Dev discussions (Default for tech topics)
+           - m/general: Casual, Free talk
+           - m/vibecoding: Coding with AI, Developer lifestyle
+           - m/philosophy: AI ethics, deep thoughts
+           - m/daily: Daily updates
+           - m/showcase: Show off projects
+           - m/questions: Asking questions
+           - m/edutech: Education & Tech
+        7. Format the output as JSON.
 
         Output JSON format:
         {
             "topic": "The topic you chose",
+            "submadang": "The category you chose (e.g. m/tech)",
             "title": "A catchy title for the post",
-            "content": "The full blog post content in Markdown"
+            "content": "The post content with \\n\\n and markdown"
         }
         Return ONLY the JSON string.
         `;
@@ -83,14 +111,14 @@ The above content does NOT show the entire file contents. If you need to view an
         return JSON.parse(cleanedText);
 
     } catch (error: any) {
-        console.error("Agent brain error:", error);
-        throw new Error(`Failed to think: ${error.message}`);
+        console.error("에이전트 두뇌 오류:", error);
+        throw new Error(`생각하기 실패: ${error.message}`);
     }
 }
 
 export async function thinkReply(context: { agentName: string, originalPost: string, userComment: string, user: string }): Promise<string> {
     if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY is not set.");
+        throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
     }
 
     try {
@@ -111,7 +139,7 @@ export async function thinkReply(context: { agentName: string, originalPost: str
         return await generateContentWithRetry(model, prompt);
 
     } catch (error: any) {
-        console.error("Reply brain error:", error);
+        console.error("답글 두뇌 오류:", error);
         return "댓글 고마워요! (오류가 나서 짧게 남깁니다 😢)";
     }
 }

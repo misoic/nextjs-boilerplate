@@ -7,16 +7,16 @@ import { queueService } from './queue-service';
 
 export const agentService = {
     /**
-     * Step 1: Generate a post and save to queue (Does NOT post to API)
+     * 1단계: 게시글 초안 생성 및 대기열 저장 (API에 바로 게시하지 않음)
      */
     async generatePostDraft(topic?: string) {
-        console.log("🧠 AutoPost: Generating Draft...");
+        console.log("🧠 자동 게시: 초안 생성 중...");
         try {
-            // 1. Get Agent Name
+            // 1. 에이전트 이름 가져오기
             const { supabase } = await import('@/app/lib/supabase');
             const { data: dbAgent } = await supabase
                 .from('agents')
-                .select('name') // Only need name for thinking
+                .select('name') // 생각하는 데 이름만 필요함
                 .eq('is_verified', true)
                 .order('updated_at', { ascending: false })
                 .limit(1)
@@ -24,11 +24,11 @@ export const agentService = {
 
             const agentName = dbAgent?.name || "Agent";
 
-            // 2. Think
+            // 2. 생각하기 (AI 생성)
             const thought = await thinkAndWrite(agentName, topic);
-            console.log(`🧠 Thought Generated: ${thought.title} (${thought.content.length} chars)`);
+            console.log(`🧠 생각 생성 완료: ${thought.title} (${thought.content.length} 자)`);
 
-            // 3. Enqueue
+            // 3. 대기열(Queue)에 저장
             const id = await queueService.enqueue({
                 type: 'post_draft',
                 postData: {
@@ -39,32 +39,32 @@ export const agentService = {
                 }
             });
 
-            console.log(`✅ Draft saved to queue! ID: ${id}`);
+            console.log(`✅ 초안 대기열 저장 완료! ID: ${id}`);
             return { success: true, queueId: id, topic: thought.topic };
 
         } catch (error: any) {
-            console.error("❌ Draft Generation Failed:", error);
-            console.error(JSON.stringify(error, null, 2)); // Log full error object
+            console.error("❌ 초안 생성 실패:", error);
+            console.error(JSON.stringify(error, null, 2)); // 전체 에러 객체 로그
             throw error;
         }
     },
 
     /**
-     * UNIFIED WORKER: Process a single task from the queue (Post or Reply)
+     * 통합 워커: 대기열에서 작업 하나를 가져와 처리 (게시 또는 답글)
      */
     async processQueueItem() {
-        console.log("👷 Queue Worker: Checking for tasks...");
-        // Prioritize 'post_draft' so new articles don't get stuck behind 100 replies
+        console.log("👷 큐 워커: 작업 확인 중...");
+        // 'post_draft'를 우선 처리하여 새 글이 답글들에 밀리지 않게 함
         const task = await queueService.peek('post_draft');
 
         if (!task) {
             return { processed: false, reason: "empty" };
         }
 
-        console.log(`🚀 Processing Task: [${task.type}] ${task.id}`);
+        console.log(`🚀 작업 처리 시작: [${task.type}] ${task.id}`);
 
         try {
-            // Fetch API Key (Shared)
+            // API 키 가져오기 (공유)
             const { supabase } = await import('@/app/lib/supabase');
             const { data: dbAgent } = await supabase
                 .from('agents')
@@ -75,27 +75,27 @@ export const agentService = {
                 .single();
 
             const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
-            if (!apiKey) throw new Error("No verified agent found.");
+            if (!apiKey) throw new Error("인증된 에이전트가 없습니다.");
 
             const client = new BotMadangClient({ apiKey });
 
-            // --- TYPE 1: POST DRAFT ---
+            // --- 유형 1: 초안 게시 (POST DRAFT) ---
             if (task.type === 'post_draft' && task.postData) {
                 const post = await client.createPost(
                     task.postData.title,
                     task.postData.content,
                     task.postData.submadang
                 );
-                console.log(`✅ Published Post! ID: ${post.id}`);
+                console.log(`✅ 게시글 등록 완료! ID: ${post.id}`);
                 await sendTelegramMessage(`📝 <b>새 글 게시 완료!</b>\n\n<b>제목:</b> ${task.postData.title}\n<a href="https://botmadang.org/post/${post.id}">게시글 보기</a>`);
                 queueService.remove(task.id);
                 return { processed: true, type: 'post', id: post.id };
             }
 
-            // --- TYPE 2: REPLY TASK ---
+            // --- 유형 2: 답글 작업 (REPLY TASK) ---
             if (task.type === 'reply_task' && task.replyData) {
                 const { replyData } = task;
-                console.log(`💬 Thinking reply for user ${replyData.user}...`);
+                console.log(`💬 사용자 ${replyData.user}에게 답글 생각 중...`);
 
                 // Think
                 const replyContent = await thinkReply({
@@ -139,10 +139,15 @@ export const agentService = {
 
         } catch (error: any) {
             console.error(`❌ Task ${task.type} Failed:`, error.message);
-            if (error.response?.status === 429) {
+
+            // Handle Rate Limits explicitly
+            if (error.response?.status === 429 || error.message?.includes('Rate Limit')) {
                 console.warn("⚠️ Rate Limit Hit. Keeping in queue.");
-                throw new Error("너무 빠른 요청입니다. (Rate Limit)");
+                // Throw specific error to be caught by API route
+                throw new Error("Rate Limit");
             }
+
+            // For other errors, mark failed
             queueService.markFailed(task.id);
             throw error;
         }

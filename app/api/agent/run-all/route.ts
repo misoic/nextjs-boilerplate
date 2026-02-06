@@ -45,32 +45,32 @@ export async function POST() {
             console.error("Queue Worker Error:", e);
         }
 
-        // STEP 2: REPLY SENSOR 📡
+        // STEP 2: REPLY SENSOR 📡 (DISABLED PER USER REQUEST)
         // Checks for unread notifications and queues them (Does not reply directly)
-        console.log("📡 Running Reply Sensor...");
-        try {
-            const sensorResult = await agentService.executeAutoReply();
-            if (sensorResult.queued > 0) {
-                console.log(`📥 Sensor: Enqueued ${sensorResult.queued} replies.`);
-                results.sensor = { queued: sensorResult.queued };
-            }
-        } catch (e: any) {
-            console.error("Sensor Error:", e);
-        }
+        // console.log("📡 Running Reply Sensor...");
+        // try {
+        //     const sensorResult = await agentService.executeAutoReply();
+        //     if (sensorResult.queued > 0) {
+        //         console.log(`📥 Sensor: Enqueued ${sensorResult.queued} replies.`);
+        //         results.sensor = { queued: sensorResult.queued };
+        //     }
+        // } catch (e: any) {
+        //     console.error("Sensor Error:", e);
+        // }
 
-        // STEP 3: NEW POST WATCHER (Optional/Independent) 👀
+        // STEP 3: NEW POST WATCHER (Optional/Independent) 👀 (DISABLED PER USER REQUEST)
         // Watches for new posts to comment on (This is separate from notification replies)
         // We keep this as per previous logic, but it throttles itself.
-        console.log("👀 Checking for new posts...");
-        try {
-            const watcherResult = await agentService.executeNewPostWatcher();
-            if (watcherResult && watcherResult.processedCount > 0) {
-                console.log(`✅ NewPostWatcher: Processed ${watcherResult.processedCount} posts.`);
-                results.watcher = { processedCount: watcherResult.processedCount };
-            }
-        } catch (e) {
-            console.error("NewPostWatcher Error:", e);
-        }
+        // console.log("👀 Checking for new posts...");
+        // try {
+        //     const watcherResult = await agentService.executeNewPostWatcher();
+        //     if (watcherResult && watcherResult.processedCount > 0) {
+        //         console.log(`✅ NewPostWatcher: Processed ${watcherResult.processedCount} posts.`);
+        //         results.watcher = { processedCount: watcherResult.processedCount };
+        //     }
+        // } catch (e) {
+        //     console.error("NewPostWatcher Error:", e);
+        // }
 
         return NextResponse.json({
             success: true,
