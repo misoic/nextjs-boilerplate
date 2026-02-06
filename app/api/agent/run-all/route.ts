@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { BotMadangClient } from '@/app/lib/botmadang';
 import { supabase } from '@/app/lib/supabase';
+import { agentService } from '@/app/lib/agent-service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize Gemini
@@ -35,17 +36,17 @@ async function generateReply(context: string, authorName: string): Promise<strin
 export async function POST() {
     try {
         // 1. Get Active Agent API Key
-        let apiKey = process.env.BOTMADANG_API_KEY;
-        if (!apiKey) {
-            const { data: agent } = await supabase
-                .from('agents')
-                .select('api_key')
-                .eq('is_verified', true)
-                .order('updated_at', { ascending: false })
-                .limit(1)
-                .single();
-            if (agent?.api_key) apiKey = agent.api_key;
-        }
+        // 1. Get Active Agent API Key
+        // Priority: DB verified key > Env key
+        const { data: agent } = await supabase
+            .from('agents')
+            .select('api_key')
+            .eq('is_verified', true)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        let apiKey = agent?.api_key || process.env.BOTMADANG_API_KEY;
 
         if (!apiKey) {
             return NextResponse.json({ success: false, error: 'No verified agent found' }, { status: 401 });
@@ -117,15 +118,36 @@ export async function POST() {
             results.notifications.processed++;
         }
 
+        // 4. Watch for New Posts (Sequential Execution)
+        console.log("👀 Checking for new posts...");
+        // Call the service method (which we will update to be safer)
+        const watcherResult = await agentService.executeNewPostWatcher();
+        if (watcherResult) {
+            console.log(`✅ NewPostWatcher: Processed ${watcherResult.processedCount} posts.`);
+        }
+
         return NextResponse.json({
             success: true,
             results
         });
 
     } catch (error: any) {
-        console.error("Automation Error:", error);
+        // Enhanced Error Logging
+        console.error("❌ Automation Fatal Error:", error);
+
+        if (error.response) {
+            console.error("🔍 API Response Error Data:", JSON.stringify(error.response.data, null, 2));
+            console.error("🔍 API Status:", error.response.status);
+        }
+
+        const errorMessage = error.response?.data?.error || error.message || "Unknown Automation Error";
+
         return NextResponse.json(
-            { success: false, error: error.message },
+            {
+                success: false,
+                error: errorMessage,
+                details: error.stack // Optional: for debugging
+            },
             { status: 500 }
         );
     }

@@ -12,7 +12,21 @@ export const agentService = {
     async executeAutoPost(topic?: string, submadang: string = 'general') {
         console.log("🤖 AutoPost: Agent is waking up...");
         try {
-            const client = new BotMadangClient();
+            // Fetch API Key
+            const { supabase } = await import('@/app/lib/supabase');
+            const { data: dbAgent } = await supabase
+                .from('agents')
+                .select('api_key')
+                .eq('is_verified', true)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
+
+            if (!apiKey) throw new Error("No verified agent found. Please register first.");
+
+            const client = new BotMadangClient({ apiKey });
 
             // 1. Get Agent Info
             const agent = await client.getMe();
@@ -41,14 +55,19 @@ export const agentService = {
                 postId: post.id
             };
         } catch (error: any) {
-            console.error("AutoPost Error:", error);
+            console.error("❌ AutoPost Detailed Error:", error);
+            if (error.response) {
+                console.error("🔍 AutoPost API Response:", JSON.stringify(error.response.data, null, 2));
+            }
+
             if (error.response?.status === 429) {
                 throw new Error("너무 빠른 요청입니다. 잠시 후 다시 시도해주세요. (Rate Limit Exceeded)");
             }
             if (error.message.includes('Max retries exceeded') || error.message.includes('Failed to think')) {
                 throw new Error("AI가 잠시 휴식 중입니다. 30초 뒤에 다시 시도해주세요! 🤯");
             }
-            throw error;
+            // Pass through the detailed message
+            throw new Error(`AutoPost Failed: ${error.response?.data?.error || error.message}`);
         }
     },
 
@@ -93,7 +112,24 @@ export const agentService = {
     async executeAutoReply() {
         // console.log("💬 AutoReply: Checking notifications...");
         try {
-            const client = new BotMadangClient();
+            // Fetch API Key
+            const { supabase } = await import('@/app/lib/supabase');
+            const { data: dbAgent } = await supabase
+                .from('agents')
+                .select('api_key')
+                .eq('is_verified', true)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
+
+            if (!apiKey) {
+                console.log("AutoReply: No verified agent found.");
+                return { success: false, error: "No verified agent" };
+            }
+
+            const client = new BotMadangClient({ apiKey });
 
             // 1. Get Unread Notifications
             // 1. Get Unread Notifications
@@ -165,10 +201,24 @@ export const agentService = {
 
         console.log("👀 NewPostWatcher: Checking for new posts...");
         try {
-            const client = new BotMadangClient();
+            // Fetch API Key
+            const { supabase } = await import('@/app/lib/supabase');
+            const { data: dbAgent } = await supabase
+                .from('agents')
+                .select('api_key')
+                .eq('is_verified', true)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            const apiKey = dbAgent?.api_key || process.env.BOTMADANG_API_KEY;
+
+            if (!apiKey) return;
+
+            const client = new BotMadangClient({ apiKey });
             const me = await client.getMe();
-            // Fetch 50 to be safe (cover 5 mins of activity)
-            const posts = await client.getPosts(50);
+            // Fetch 10 to be safe (reduced from 50 to avoid Rate Limits)
+            const posts = await client.getPosts(10);
 
             if (posts.length === 0) return;
 
@@ -183,8 +233,12 @@ export const agentService = {
 
             // 2. Initialize State if First Run
             if (!lastSeenId) {
+                if (posts.length === 0) {
+                    console.log("no posts found to initialize state.");
+                    return;
+                }
                 console.log("✨ First run: Marking latest post as baseline.");
-                const latestId = posts[0].id;
+                const latestId = posts[0].id; // Safe now
                 fs.writeFileSync(STATE_FILE, JSON.stringify({ last_seen_post_id: latestId }));
                 return;
             }
@@ -193,6 +247,12 @@ export const agentService = {
             // 3. Find New Posts
             const newPosts: any[] = [];
             for (const post of posts) {
+                // Safety Check: Ensure post and author exist
+                if (!post || !post.id || !post.author) {
+                    console.warn(`⚠️ Skipping malformed post: ${JSON.stringify(post)}`);
+                    continue;
+                }
+
                 // Fix: Compare as strings to avoid type mismatch (number vs string)
                 if (String(post.id) === String(lastSeenId)) break;
                 if (post.author.id === me.id) continue; // Skip my own posts

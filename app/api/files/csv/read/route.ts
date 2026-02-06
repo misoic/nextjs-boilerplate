@@ -14,7 +14,7 @@ export async function GET() {
             카테고리: string;
             평점: number;
         }> = [];
-        return new Promise((resolve) => {
+        return new Promise<NextResponse>((resolve) => {
             createReadStream(filePath)
                 .pipe(csv())
                 .on('data', (data: Record<string, string>) => {
